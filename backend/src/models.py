@@ -21,4 +21,4 @@ class Word(Base):
     id = Column(Integer, primary_key=True, index=True)
     vocab_id = Column(Integer, ForeignKey("vocabularies.id"))
     term = Column(String, nullable=False)
-    definition = Column(String, nullable=False)
+    meaning = Column(String, nullable=False)
