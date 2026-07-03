@@ -1,5 +1,5 @@
 import { useState } from 'react'
-
+import VocabListPage from './pages/VocabListPage'
 import './App.css'
 
 function App() {
@@ -23,12 +23,10 @@ function App() {
   }
   if (isLoggedIn) {
     return (
-      <main>
-        <h1>{username}님의 단어장</h1>
-        <button onClick={() => setIsLoggedIn(false)}>
-          로그아웃
-        </button>
-      </main>
+      <VocabListPage
+        username={username}
+        onLogout={() => setIsLoggedIn(false)}
+      />
     )
   }
   return (
