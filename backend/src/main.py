@@ -10,7 +10,49 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-# DB 세션 의존성 주입 (이 함수를 통해 API마다 DB 통로를 관리합니다)
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+#단어장 추가
+@app.post("/vocabs/", response_model=schemas.Vocabulary) 
+def create_vocab(vocab: schemas.VocabCreate, db: Session = Depends(get_db)):
+    # main.py에서 수정할 부분
+    db_vocab = models.Vocabulary(title=vocab.title)
+    db.add(db_vocab)
+    db.commit()
+    db.refresh(db_vocab)
+    return db_vocab
+
+# 모든 단어장 조회
+@app.get("/vocabs/")
+def read_vocab(db: Session = Depends(get_db)):
+    vocabs = db.query(models.Vocabulary).all()
+    return vocabs
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+#단어장 삭제
+@app.delete("/vocabs/{vocabulary_id}")
+def delete_vocab(vocabulary_id: int, db: Session = Depends(get_db)):
+    vocabulary = db.query(models.Vocabulary).filter(models.Vocabulary.id == vocabulary_id).first()
+    
+    if not vocabulary:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="삭제할 단어장을 찾을 수 없습니다."
+        )
+    
+    # 2. 삭제 수행
+    db.delete(vocabulary)
+    db.commit()
+    
+    return {"message": "Vocabulary successfully deleted"}
+
+ # DB 세션 의존성 주입 (이 함수를 통해 API마다 DB 통로를 관리합니다)
 def get_db():
     db = SessionLocal()
     try:
@@ -35,6 +77,23 @@ def read_words(db: Session = Depends(get_db)):
     return words
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+#단어 삭제
+@app.delete("/words/{word_id}")
+def delete_word(word_id: int, db: Session = Depends(get_db)):
+    word = db.query(models.Word).filter(models.Word.id == word_id).first()
+    
+    if not word:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="삭제할 단어를 찾을 수 없습니다."
+        )
+    
+    # 2. 삭제 수행
+    db.delete(word)
+    db.commit()
+    
+    return {"message": "Word successfully deleted"}
 
 @app.post("/users/", response_model=schemas.UserResponse)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
@@ -72,3 +131,4 @@ def login(user_login: schemas.UserLogin, db: Session = Depends(get_db)):
     
     # 4. 로그인 성공
     return {"message": "로그인 성공!"}
+
