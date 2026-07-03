@@ -18,9 +18,13 @@ class Vocabulary(Base):
     owner_id = Column(Integer, ForeignKey("users.id"))
     title = Column(String, nullable=False)
 
+    vocab_dict = relationship("Word", back_populates="vocab")
+
 class Word(Base):
     __tablename__ = "words"
     id = Column(Integer, primary_key=True, index=True)
     vocab_id = Column(Integer, ForeignKey("vocabularies.id"))
     term = Column(String, nullable=False)
     meaning = Column(String, nullable=False)
+
+    words = relationship("Vocabulary", back_populates="words")

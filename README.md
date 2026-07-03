@@ -58,6 +58,23 @@ https://www.notion.so/IA-392e1fcea5b180b6ad5fd4a646694833?source=copy_link
 
 <!-- ERD 이미지 또는 테이블 정의 -->
 
+1. Users table
+- ID: Integer / Username: String / Password: String (암호화)
+- 사용자 정보 저장
+- 고유번호 (PK) 부여
+- Vocabulary table의 Owner 역할
+
+2. Vocabulary table
+- ID: Integer / Owner_id: Integer / Title: String
+- 단어장 저장
+- 여러개의 Word 저장
+
+3. Word table
+- ID: Integer / Vocab_id: Integer / Term: String / Meaning: String
+- 단어와 단어 뜻, 그리고 어떤 단어장의 일부인지를 저장
+- 현재까지 가장 세부적 단계
+
+
 ---
 
 ## API 문서
