@@ -48,7 +48,7 @@
 > 서비스의 전체 페이지 구조와 페이지 간 이동 흐름; 각 페이지의 주요 UI 구성, 입력 요소, 버튼, 사용자 행동 흐름 등을 간단한 와이어프레임 형태로 정리
 
 <!-- Figma 링크 또는 이미지 첨부 -->
-https://www.notion.so/IA-392e1fcea5b180b6ad5fd4a646694833?source=copy_link
+https://www.notion.so/IA-392e1fcea5b180b6ad5fd4a646694833?source=copy_linkk
 
 ---
 
