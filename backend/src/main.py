@@ -10,6 +10,7 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
+# DB 세션 의존성 주입 (이 함수를 통해 API마다 DB 통로를 관리합니다)
 def get_db():
     db = SessionLocal()
     try:
@@ -52,15 +53,7 @@ def delete_vocab(vocabulary_id: int, db: Session = Depends(get_db)):
     
     return {"message": "Vocabulary successfully deleted"}
 
- # DB 세션 의존성 주입 (이 함수를 통해 API마다 DB 통로를 관리합니다)
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-# 2. 단어 추가 API (POST)
+ # 2. 단어 추가 API (POST)
 @app.post("/words/", response_model=schemas.Word) # 응답 형태를 Schema로 지정
 def create_word(word: schemas.WordCreate, db: Session = Depends(get_db)):
     # main.py에서 수정할 부분
@@ -77,6 +70,25 @@ def read_words(db: Session = Depends(get_db)):
     return words
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+#단어 혹은 뜻 수정하기
+@app.put("/words/{word_id}", response_model=schemas.Word)
+def update_word(word_id: int, word_update: schemas.WordUpdate, db: Session = Depends(get_db)):
+    # 1. 수정할 단어 찾기
+    db_word = db.query(models.Word).filter(models.Word.id == word_id).first()
+    
+    if not db_word:
+        raise HTTPException(status_code=404, detail="수정할 단어를 찾을 수 없습니다.")
+    
+    # 2. 값 변경 (Update)
+    db_word.new_term = word_update.new_term
+    db_word.new_meaning = word_update.new_meaning
+    
+    # 3. DB에 저장
+    db.commit()
+    db.refresh(db_word)
+    
+    return db_word
 
 #단어 삭제
 @app.delete("/words/{word_id}")

@@ -13,6 +13,10 @@ class Word(WordCreate):
     class Config:
         from_attributes = True # ORM 객체를 Pydantic 모델로 변환 가능하게 함
 
+class WordUpdate(BaseModel):
+    new_term: str
+    new_meaning: str
+
 class VocabCreate(BaseModel):
     title:str
 
