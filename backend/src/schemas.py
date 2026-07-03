@@ -12,3 +12,18 @@ class Word(WordCreate):
 
     class Config:
         from_attributes = True # ORM 객체를 Pydantic 모델로 변환 가능하게 함
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+class UserCreate(BaseModel):
+    username: str
+    password: str
+
+class UserResponse(BaseModel):
+    id: int
+    username: str
+
+    class Config:
+        from_atts = True

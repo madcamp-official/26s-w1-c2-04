@@ -1,9 +1,9 @@
 # backend/main.py
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from .database import engine, SessionLocal, Base
 from . import models, schemas # schemas는 아래에서 설명할 예정입니다
-from .models import Word
+from passlib.context import CryptContext
 
 # 이 코드가 데이터베이스에 테이블을 생성해줍니다.
 Base.metadata.create_all(bind=engine)
@@ -34,3 +34,41 @@ def read_words(db: Session = Depends(get_db)):
     words = db.query(models.Word).all()
     return words
 
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+@app.post("/users/", response_model=schemas.UserResponse)
+def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    # 1. 비밀번호 해싱
+    hashed_pw = pwd_context.hash(user.password)
+    
+    # 2. 모델 객체 생성
+    db_user = models.User(username=user.username, hashed_password=hashed_pw)
+    
+    # 3. DB 저장
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+
+@app.post("/login/")
+def login(user_login: schemas.UserLogin, db: Session = Depends(get_db)):
+    # 1. 아이디로 사용자 조회
+    user = db.query(models.User).filter(models.User.username == user_login.username).first()
+    
+    # 2. 아이디가 존재하지 않는 경우
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="아이디가 존재하지 않습니다. 회원가입을 해주세요."
+        )
+    
+    # 3. 비밀번호가 일치하지 않는 경우
+    if not pwd_context.verify(user_login.password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="아이디 혹은 비밀번호가 일치하지 않습니다."
+        )
+    
+    # 4. 로그인 성공
+    return {"message": "로그인 성공!"}

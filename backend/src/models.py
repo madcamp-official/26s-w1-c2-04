@@ -1,6 +1,6 @@
 from .database import Base
 from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import declarative_base, relationship
 
 #Base = declarative_base()
 
@@ -9,6 +9,8 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, nullable=False)
     hashed_password = Column(String, nullable=False)
+
+    vocabs = relationship("Vocabulary", backref="owner")
 
 class Vocabulary(Base):
     __tablename__ = "vocabularies"
