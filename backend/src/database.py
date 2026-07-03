@@ -14,3 +14,4 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # 핵심! 이 Base를 상속받아야 models.py에서 테이블 인식이 가능합니다.
 Base = declarative_base()
+

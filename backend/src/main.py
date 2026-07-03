@@ -5,7 +5,7 @@ from .database import engine, SessionLocal, Base
 from . import models, schemas # schemas는 아래에서 설명할 예정입니다
 from .models import Word
 
-# 1. DB 테이블 자동 생성
+# 이 코드가 데이터베이스에 테이블을 생성해줍니다.
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
@@ -33,3 +33,4 @@ def create_word(word: schemas.WordCreate, db: Session = Depends(get_db)):
 def read_words(db: Session = Depends(get_db)):
     words = db.query(models.Word).all()
     return words
+
