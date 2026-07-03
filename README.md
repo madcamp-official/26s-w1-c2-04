@@ -66,7 +66,10 @@ https://www.notion.so/IA-392e1fcea5b180b6ad5fd4a646694833?source=copy_link
 
 | Method | Endpoint | 설명 | 요청 | 응답 |
 |---|---|---|---|---|
-|  |  |  |  |  |
+| POST | /words/ | 단어 생성 | term, meaning | db_word 저장 |
+| GET | /words/ | 단어 조회 | 없음 | word (term, meaning) |
+| POST | /users/ | 회원가입 | username, 비밀번호 | db_user 저장 |
+| POST | /login/ | 로그인 | username, 비밀번호 | 로그인 성공/실패 여부 |
 
 ---
 
