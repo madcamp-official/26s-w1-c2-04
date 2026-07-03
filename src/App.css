@@ -4,6 +4,7 @@
   justify-content: center;
   align-items: center;
   background: #f1f5f9;
+  color-scheme: light;
 }
 
 .login-card {
@@ -56,4 +57,230 @@
 
 .login-form button:hover {
   background: #1d4ed8;
+}
+
+.error-message {
+  color: #dc2626;
+  font-size: 14px;
+}
+
+.vocab-page {
+  width: 100%;
+  min-height: 100vh;
+  padding: 48px 40px;
+  box-sizing: border-box;
+  background:
+    radial-gradient(circle at top right, #dbeafe 0, transparent 32%),
+    #f8fafc;
+  color-scheme: light;
+  text-align: left;
+}
+
+.vocab-header {
+  max-width: 960px;
+  margin: 0 auto 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.vocab-header h1 {
+  margin: 4px 0 0;
+  color: #172554;
+  font-size: 32px;
+  font-weight: 750;
+  letter-spacing: -0.8px;
+}
+
+.vocab-eyebrow {
+  color: #2563eb;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+
+.logout-button {
+  padding: 10px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.85);
+  color: #475569;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.logout-button:hover {
+  border-color: #94a3b8;
+  background: white;
+}
+
+.vocab-create-form {
+  max-width: 960px;
+  margin: 0 auto 32px;
+  padding: 18px;
+  display: flex;
+  gap: 12px;
+  box-sizing: border-box;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+.vocab-create-form input {
+  min-width: 0;
+  flex: 1;
+  padding: 13px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  background: white;
+  color: #0f172a;
+  font-size: 16px;
+}
+
+.vocab-create-form input:focus {
+  border-color: #2563eb;
+  outline: 3px solid rgba(37, 99, 235, 0.15);
+}
+
+.vocab-create-form button {
+  padding: 13px 26px;
+  border: none;
+  border-radius: 9px;
+  background: #2563eb;
+  color: white;
+  font-size: 16px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.vocab-create-form button:hover {
+  background: #1d4ed8;
+}
+
+.vocab-grid {
+  max-width: 960px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.vocab-card {
+  min-height: 60px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  background: white;
+  box-shadow: 0 5px 16px rgba(15, 23, 42, 0.05);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.vocab-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.1);
+}
+
+.vocab-card-icon {
+  width: 36px;
+  height: 36px;
+  margin-bottom: 14px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-family: Georgia, serif;
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.vocab-card h2 {
+  margin: 0 0 14px;
+  color: #1e293b;
+  font-size: 18px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.delete-button {
+  margin-top: auto;
+  align-self: flex-end;
+  padding: 7px 12px;
+  border: none;
+  border-radius: 7px;
+  background: #fee2e2;
+  color: #dc2626;
+  cursor: pointer;
+}
+
+.delete-button:hover {
+  background: #fecaca;
+}
+
+.empty-vocab {
+  max-width: 960px;
+  min-height: 300px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  border: 2px dashed #cbd5e1;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.55);
+  text-align: center;
+}
+
+.empty-vocab span {
+  width: 54px;
+  height: 54px;
+  margin-bottom: 16px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: #dbeafe;
+  color: #2563eb;
+  font-family: Georgia, serif;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.empty-vocab h2 {
+  margin: 0 0 8px;
+  color: #334155;
+}
+
+.empty-vocab p {
+  color: #94a3b8;
+  font-size: 15px;
+}
+
+@media (max-width: 600px) {
+  .vocab-page {
+    padding: 28px 20px;
+  }
+
+  .vocab-header {
+    align-items: flex-start;
+  }
+
+  .vocab-header h1 {
+    font-size: 24px;
+  }
+
+  .vocab-create-form {
+    flex-direction: column;
+  }
+
+  .vocab-create-form button {
+    width: 100%;
+  }
 }
