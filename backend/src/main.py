@@ -78,7 +78,7 @@ def login(user_login: schemas.UserLogin, db: Session = Depends(get_db)):
     ):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="아이디 혹은 비밀번호가 일치하지 않습니다.",
+            detail="아이디 또는 비밀번호가 일치하지 않습니다.",
         )
 
     return {

@@ -38,7 +38,7 @@ function VocabDetailPage({
     setEditingWordId(null)
   }
 
-  async function handleSaveWord(event: React.SubmitEvent<HTMLFormElement>) {
+  async function handleSaveWord(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
     const trimmedWord = word.trim()
@@ -124,7 +124,7 @@ function VocabDetailPage({
     <main className="detail-page">
       <header className="detail-header">
         <button className="back-button" type="button" onClick={onBack}>
-          ← 단어장 목록
+          단어장 목록
         </button>
         <div>
           <p className="vocab-eyebrow">VOCABULARY</p>

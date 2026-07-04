@@ -6,8 +6,20 @@ export type LoginResponse = {
   message: string
 }
 
+export type SignupResponse = {
+  id: number
+  username: string
+}
+
 export function login(username: string, password: string) {
   return apiRequest<LoginResponse>('/login/', {
+    method: 'POST',
+    body: JSON.stringify({ username, password }),
+  })
+}
+
+export function signup(username: string, password: string) {
+  return apiRequest<SignupResponse>('/users/', {
     method: 'POST',
     body: JSON.stringify({ username, password }),
   })

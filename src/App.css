@@ -25,6 +25,33 @@
   color: #64748b;
 }
 
+.auth-tabs {
+  margin-bottom: 22px;
+  padding: 4px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  border-radius: 10px;
+  background: #e2e8f0;
+}
+
+.auth-tabs button {
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #64748b;
+  font-size: 15px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.auth-tabs button.active {
+  background: white;
+  color: #2563eb;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+
 .login-form {
   display: flex;
   flex-direction: column;
