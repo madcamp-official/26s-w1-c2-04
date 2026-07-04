@@ -1,3 +1,4 @@
+#DB를 만든다
 import sqlite3
 
 conn=sqlite3.connect('wordnote.db')

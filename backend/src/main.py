@@ -1,4 +1,6 @@
 from fastapi import Depends, FastAPI, HTTPException, status
+#Depends - DB연결을 자동으로 연동시켜줄 때 사용
+#HTTP - 성공 및 실패 이유를 파악하기 위한 설명 제공
 from fastapi.middleware.cors import CORSMiddleware
 from passlib.context import CryptContext
 from sqlalchemy.exc import IntegrityError
@@ -9,31 +11,37 @@ from .database import Base, SessionLocal, engine
 
 
 Base.metadata.create_all(bind=engine)
+#engine을 이용해서 생성된 모든 테이블을 DB에 저장
 
 app = FastAPI()
+#FastAPI app 생성, FastAPI를 실행시키기 위함.
 
+#middleware: 요청받은 도메인을 확인하는 역할 (일반적으로 중간역할을 미들웨어라고 지칭)
+#Front와의 연결을 위해 CORS허용
 app.add_middleware(
     CORSMiddleware,
+    #허용된 링크들
     allow_origins=[
         "http://localhost:5173",
         "http://127.0.0.1:5173",
     ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_credentials=True, #로그인 기능 허용
+    allow_methods=["*"], #모든 기능 (CRUD) 허용
+    allow_headers=["*"], #모든 헤더 허용
 )
 
+#암호화된 비밀번호 객체 생성, bcrypt라는 알고리즘 사용, 예전 방식으로 암호화된 비밀번호 폐기
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-
+#DB 연결 함수
 def get_db():
-    db = SessionLocal()
+    db = SessionLocal() #SQlite연결
     try:
         yield db
     finally:
         db.close()
 
-
+#API 데이터 요청이 정상적으로 왔는지 실행해보는 예시용 함수
 @app.get("/api/data")
 def read_root():
     return {"message": "Hello from FastAPI!"}
@@ -47,21 +55,21 @@ def read_root():
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = models.User(
         username=user.username,
-        hashed_password=pwd_context.hash(user.password),
+        hashed_password=pwd_context.hash(user.password), #비밀번호는 hashed 형태로 저장
     )
     db.add(db_user)
 
     try:
-        db.commit()
-    except IntegrityError:
-        db.rollback()
+        db.commit() #진짜 저장
+    except IntegrityError: #중복아이디라면 에러 발송
+        db.rollback() #실패된 작업 취소
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="이미 사용 중인 아이디입니다.",
         )
 
-    db.refresh(db_user)
-    return db_user
+    db.refresh(db_user) #반영된 db다시 읽기
+    return db_user #회원가입 여부 알려주기
 
 
 @app.post("/login/", response_model=schemas.LoginResponse)
@@ -97,7 +105,7 @@ def logout():
 def read_vocabs(owner_id: int, db: Session = Depends(get_db)):
     return (
         db.query(models.Vocabulary)
-        .filter(models.Vocabulary.owner_id == owner_id)
+        .filter(models.Vocabulary.owner_id == owner_id) #해당 사용자의 단어장만 검색 및 조회
         .all()
     )
 
