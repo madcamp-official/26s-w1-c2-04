@@ -92,6 +92,7 @@ https://www.notion.so/IA-392e1fcea5b180b6ad5fd4a646694833?source=copy_link
 | DELETE | /words{word_id}/ | 단어 삭제 | word_id | 단어 삭제 성공 |
 | POST | /users/ | 회원가입 | username, 비밀번호 | db_user 저장 |
 | POST | /login/ | 로그인 | username, 비밀번호 | 로그인 성공/실패 여부 |
+| POST | /logout/ | 로그아웃 | 로그인 시 받은 access token | 로그아웃 |
 
 
 ---

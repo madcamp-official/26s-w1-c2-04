@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from .database import engine, SessionLocal, Base
 from . import models, schemas # schemas는 아래에서 설명할 예정입니다
 from passlib.context import CryptContext
+from .auth import oauth2_scheme
 
 # 이 코드가 데이터베이스에 테이블을 생성해줍니다.
 Base.metadata.create_all(bind=engine)
@@ -143,4 +144,8 @@ def login(user_login: schemas.UserLogin, db: Session = Depends(get_db)):
     
     # 4. 로그인 성공
     return {"message": "로그인 성공!"}
+
+@app.post("/logout/")
+def logout(token: str = Depends(oauth2_scheme)):
+    return {"message": "로그아웃 되었습니다."}
 
