@@ -1,9 +1,6 @@
 import { useState } from 'react'
-
-type Vocab = {
-    id: number
-    title: string
-}
+import type { Vocab } from '../types/vocabulary'
+import VocabDetailPage from './VocabDetailPage'
 
 type VocabListPageProps = {
     username: string
@@ -13,6 +10,7 @@ type VocabListPageProps = {
 function VocabListPage({ username, onLogout }: VocabListPageProps) {
     const [vocabTitle, setVocabTitle] = useState('')
     const [vocabs, setVocabs] = useState<Vocab[]>([])
+    const [selectedVocabId, setSelectedVocabId] = useState<number | null>(null)
 
     function handleAddVocab(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault()
@@ -23,6 +21,7 @@ function VocabListPage({ username, onLogout }: VocabListPageProps) {
         const newVocab = {
             id: Date.now(),
             title,
+            words: [],
         }
 
         setVocabs((currentVocabs) => [...currentVocabs, newVocab])
@@ -32,6 +31,84 @@ function VocabListPage({ username, onLogout }: VocabListPageProps) {
     function handleDeleteVocab(id: number) {
         setVocabs((currentVocabs) =>
             currentVocabs.filter((vocab) => vocab.id !== id),
+        )
+    }
+
+    function handleAddWord(vocabId: number, word: string, meaning: string) {
+        setVocabs((currentVocabs) =>
+            currentVocabs.map((vocab) =>
+                vocab.id === vocabId
+                    ? {
+                        ...vocab,
+                        words: [
+                            ...vocab.words,
+                            { id: Date.now(), word, meaning },
+                        ],
+                    }
+                    : vocab,
+            ),
+        )
+    }
+
+    function handleUpdateWord(
+        vocabId: number,
+        wordId: number,
+        word: string,
+        meaning: string,
+    ) {
+        setVocabs((currentVocabs) =>
+            currentVocabs.map((vocab) =>
+                vocab.id === vocabId
+                    ? {
+                        ...vocab,
+                        words: vocab.words.map((entry) =>
+                            entry.id === wordId
+                                ? { ...entry, word, meaning }
+                                : entry,
+                        ),
+                    }
+                    : vocab,
+            ),
+        )
+    }
+
+    function handleDeleteWords(vocabId: number, wordIds: number[]) {
+        setVocabs((currentVocabs) =>
+            currentVocabs.map((vocab) =>
+                vocab.id === vocabId
+                    ? {
+                        ...vocab,
+                        words: vocab.words.filter(
+                            (entry) => !wordIds.includes(entry.id),
+                        ),
+                    }
+                    : vocab,
+            ),
+        )
+    }
+
+    const selectedVocab = vocabs.find((vocab) => vocab.id === selectedVocabId)
+
+    if (selectedVocab) {
+        return (
+            <VocabDetailPage
+                vocab={selectedVocab}
+                onBack={() => setSelectedVocabId(null)}
+                onAddWord={(word, meaning) =>
+                    handleAddWord(selectedVocab.id, word, meaning)
+                }
+                onUpdateWord={(wordId, word, meaning) =>
+                    handleUpdateWord(
+                        selectedVocab.id,
+                        wordId,
+                        word,
+                        meaning,
+                    )
+                }
+                onDeleteWords={(wordIds) =>
+                    handleDeleteWords(selectedVocab.id, wordIds)
+                }
+            />
         )
     }
 
@@ -58,7 +135,7 @@ function VocabListPage({ username, onLogout }: VocabListPageProps) {
 
             {vocabs.length === 0 ? (
                 <section className="empty-vocab">
-                    <span aria-hidden="true">A</span>
+
                     <h2>아직 단어장이 없습니다</h2>
                     <p>위 입력창에서 첫 번째 단어장을 만들어 보세요.</p>
                 </section>
@@ -66,15 +143,26 @@ function VocabListPage({ username, onLogout }: VocabListPageProps) {
                 <section className="vocab-grid">
                     {vocabs.map((vocab) => (
                         <article className="vocab-card" key={vocab.id}>
-
                             <h2>{vocab.title}</h2>
-                            <button
-                                className="delete-button"
-                                type="button"
-                                onClick={() => handleDeleteVocab(vocab.id)}
-                            >
-                                삭제
-                            </button>
+                            <p className="vocab-word-count">
+                                {vocab.words.length}개 단어
+                            </p>
+                            <div className="vocab-card-actions">
+                                <button
+                                    className="open-vocab-button"
+                                    type="button"
+                                    onClick={() => setSelectedVocabId(vocab.id)}
+                                >
+                                    열기
+                                </button>
+                                <button
+                                    className="delete-button"
+                                    type="button"
+                                    onClick={() => handleDeleteVocab(vocab.id)}
+                                >
+                                    삭제
+                                </button>
+                            </div>
                         </article>
                     ))}
                 </section>
