@@ -11,6 +11,12 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
+@app.get("/")
+def root():
+    return {
+        "message": "Vocabulary API is running!"
+    }
+
 # DB 세션 의존성 주입 (이 함수를 통해 API마다 DB 통로를 관리합니다)
 def get_db():
     db = SessionLocal()
@@ -110,6 +116,7 @@ def delete_word(word_id: int, db: Session = Depends(get_db)):
 
 @app.post("/users/", response_model=schemas.UserResponse)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+
     # 1. 비밀번호 해싱
     hashed_pw = pwd_context.hash(user.password)
     
