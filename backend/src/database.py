@@ -1,7 +1,6 @@
 # backend/database.py
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import declarative_base, sessionmaker
 
 # SQLite를 사용할 경우의 설정 (파일 기반 DB)
 SQLALCHEMY_DATABASE_URL = "sqlite:///./wordnote.db"

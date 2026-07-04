@@ -1,17 +1,31 @@
-# backend/main.py
-from fastapi import FastAPI, Depends, HTTPException, status
-from sqlalchemy.orm import Session
-from .database import engine, SessionLocal, Base
-from . import models, schemas # schemas는 아래에서 설명할 예정입니다
+from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 from passlib.context import CryptContext
-from .auth import oauth2_scheme
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
 
-# 이 코드가 데이터베이스에 테이블을 생성해줍니다.
+from . import models, schemas
+from .database import Base, SessionLocal, engine
+
+
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-# DB 세션 의존성 주입 (이 함수를 통해 API마다 DB 통로를 관리합니다)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
 def get_db():
     db = SessionLocal()
     try:
@@ -19,133 +33,201 @@ def get_db():
     finally:
         db.close()
 
-#단어장 추가
-@app.post("/vocabs/", response_model=schemas.Vocabulary) 
+
+@app.get("/api/data")
+def read_root():
+    return {"message": "Hello from FastAPI!"}
+
+
+@app.post(
+    "/users/",
+    response_model=schemas.UserResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    db_user = models.User(
+        username=user.username,
+        hashed_password=pwd_context.hash(user.password),
+    )
+    db.add(db_user)
+
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="이미 사용 중인 아이디입니다.",
+        )
+
+    db.refresh(db_user)
+    return db_user
+
+
+@app.post("/login/", response_model=schemas.LoginResponse)
+def login(user_login: schemas.UserLogin, db: Session = Depends(get_db)):
+    user = (
+        db.query(models.User)
+        .filter(models.User.username == user_login.username)
+        .first()
+    )
+
+    if not user or not pwd_context.verify(
+        user_login.password,
+        user.hashed_password,
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="아이디 혹은 비밀번호가 일치하지 않습니다.",
+        )
+
+    return {
+        "id": user.id,
+        "username": user.username,
+        "message": "로그인 성공!",
+    }
+
+
+@app.post("/logout/")
+def logout():
+    return {"message": "로그아웃 되었습니다."}
+
+
+@app.get("/vocabs/", response_model=list[schemas.Vocabulary])
+def read_vocabs(owner_id: int, db: Session = Depends(get_db)):
+    return (
+        db.query(models.Vocabulary)
+        .filter(models.Vocabulary.owner_id == owner_id)
+        .all()
+    )
+
+
+@app.post(
+    "/vocabs/",
+    response_model=schemas.Vocabulary,
+    status_code=status.HTTP_201_CREATED,
+)
 def create_vocab(vocab: schemas.VocabCreate, db: Session = Depends(get_db)):
-    # main.py에서 수정할 부분
-    db_vocab = models.Vocabulary(title=vocab.title)
+    owner = (
+        db.query(models.User)
+        .filter(models.User.id == vocab.owner_id)
+        .first()
+    )
+    if not owner:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="사용자를 찾을 수 없습니다.",
+        )
+
+    db_vocab = models.Vocabulary(
+        title=vocab.title,
+        owner_id=vocab.owner_id,
+    )
     db.add(db_vocab)
     db.commit()
     db.refresh(db_vocab)
     return db_vocab
 
-# 모든 단어장 조회
-@app.get("/vocabs/")
-def read_vocab(db: Session = Depends(get_db)):
-    vocabs = db.query(models.Vocabulary).all()
-    return vocabs
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-#단어장 삭제
 @app.delete("/vocabs/{vocabulary_id}")
 def delete_vocab(vocabulary_id: int, db: Session = Depends(get_db)):
-    vocabulary = db.query(models.Vocabulary).filter(models.Vocabulary.id == vocabulary_id).first()
-    
+    vocabulary = (
+        db.query(models.Vocabulary)
+        .filter(models.Vocabulary.id == vocabulary_id)
+        .first()
+    )
     if not vocabulary:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="삭제할 단어장을 찾을 수 없습니다."
+            detail="삭제할 단어장을 찾을 수 없습니다.",
         )
-    
-    # 2. 삭제 수행
+
     db.delete(vocabulary)
     db.commit()
-    
-    return {"message": "Vocabulary successfully deleted"}
+    return {"message": "단어장이 삭제되었습니다."}
 
- # 2. 단어 추가 API (POST)
-@app.post("/words/", response_model=schemas.Word) # 응답 형태를 Schema로 지정
-def create_word(word: schemas.WordCreate, db: Session = Depends(get_db)):
-    # main.py에서 수정할 부분
-    db_word = models.Word(term=word.term, meaning=word.meaning)
+
+@app.get(
+    "/vocabs/{vocabulary_id}/words/",
+    response_model=list[schemas.Word],
+)
+def read_words(vocabulary_id: int, db: Session = Depends(get_db)):
+    return (
+        db.query(models.Word)
+        .filter(models.Word.vocab_id == vocabulary_id)
+        .all()
+    )
+
+
+@app.post(
+    "/vocabs/{vocabulary_id}/words/",
+    response_model=schemas.Word,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_word(
+    vocabulary_id: int,
+    word: schemas.WordCreate,
+    db: Session = Depends(get_db),
+):
+    vocabulary = (
+        db.query(models.Vocabulary)
+        .filter(models.Vocabulary.id == vocabulary_id)
+        .first()
+    )
+    if not vocabulary:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="단어장을 찾을 수 없습니다.",
+        )
+
+    db_word = models.Word(
+        vocab_id=vocabulary_id,
+        word=word.word,
+        meaning=word.meaning,
+    )
     db.add(db_word)
     db.commit()
     db.refresh(db_word)
     return db_word
 
-# 3. 모든 단어 조회 API (GET)
-@app.get("/words/")
-def read_words(db: Session = Depends(get_db)):
-    words = db.query(models.Word).all()
-    return words
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-#단어 혹은 뜻 수정하기
 @app.put("/words/{word_id}", response_model=schemas.Word)
-def update_word(word_id: int, word_update: schemas.WordUpdate, db: Session = Depends(get_db)):
-    # 1. 수정할 단어 찾기
-    db_word = db.query(models.Word).filter(models.Word.id == word_id).first()
-    
+def update_word(
+    word_id: int,
+    word_update: schemas.WordUpdate,
+    db: Session = Depends(get_db),
+):
+    db_word = (
+        db.query(models.Word)
+        .filter(models.Word.id == word_id)
+        .first()
+    )
     if not db_word:
-        raise HTTPException(status_code=404, detail="수정할 단어를 찾을 수 없습니다.")
-    
-    # 2. 값 변경 (Update)
-    db_word.new_term = word_update.new_term
-    db_word.new_meaning = word_update.new_meaning
-    
-    # 3. DB에 저장
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="수정할 단어를 찾을 수 없습니다.",
+        )
+
+    db_word.word = word_update.word
+    db_word.meaning = word_update.meaning
     db.commit()
     db.refresh(db_word)
-    
     return db_word
 
-#단어 삭제
+
 @app.delete("/words/{word_id}")
 def delete_word(word_id: int, db: Session = Depends(get_db)):
-    word = db.query(models.Word).filter(models.Word.id == word_id).first()
-    
+    word = (
+        db.query(models.Word)
+        .filter(models.Word.id == word_id)
+        .first()
+    )
     if not word:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="삭제할 단어를 찾을 수 없습니다."
+            detail="삭제할 단어를 찾을 수 없습니다.",
         )
-    
-    # 2. 삭제 수행
+
     db.delete(word)
     db.commit()
-    
-    return {"message": "Word successfully deleted"}
-
-@app.post("/users/", response_model=schemas.UserResponse)
-def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    # 1. 비밀번호 해싱
-    hashed_pw = pwd_context.hash(user.password)
-    
-    # 2. 모델 객체 생성
-    db_user = models.User(username=user.username, hashed_password=hashed_pw)
-    
-    # 3. DB 저장
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    return db_user
-
-
-@app.post("/login/")
-def login(user_login: schemas.UserLogin, db: Session = Depends(get_db)):
-    # 1. 아이디로 사용자 조회
-    user = db.query(models.User).filter(models.User.username == user_login.username).first()
-    
-    # 2. 아이디가 존재하지 않는 경우
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="아이디가 존재하지 않습니다. 회원가입을 해주세요."
-        )
-    
-    # 3. 비밀번호가 일치하지 않는 경우
-    if not pwd_context.verify(user_login.password, user.hashed_password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="아이디 혹은 비밀번호가 일치하지 않습니다."
-        )
-    
-    # 4. 로그인 성공
-    return {"message": "로그인 성공!"}
-
-@app.post("/logout/")
-def logout(token: str = Depends(oauth2_scheme)):
-    return {"message": "로그아웃 되었습니다."}
-
+    return {"message": "단어가 삭제되었습니다."}

@@ -1,8 +1,6 @@
 from .database import Base
 from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import declarative_base, relationship
-
-#Base = declarative_base()
+from sqlalchemy.orm import relationship
 
 class User(Base):
     __tablename__ = "users"
@@ -10,21 +8,31 @@ class User(Base):
     username = Column(String, unique=True, nullable=False)
     hashed_password = Column(String, nullable=False)
 
-    vocabs = relationship("Vocabulary", backref="owner")
+    vocabs = relationship(
+        "Vocabulary",
+        back_populates="owner",
+        cascade="all, delete-orphan",
+    )
 
 class Vocabulary(Base):
     __tablename__ = "vocabularies"
     id = Column(Integer, primary_key=True, index=True)
-    owner_id = Column(Integer, ForeignKey("users.id"))
+    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     title = Column(String, nullable=False)
 
-    vocab_dict = relationship("Word", back_populates="vocab")
+    owner = relationship("User", back_populates="vocabs")
+    words = relationship(
+        "Word",
+        back_populates="vocab",
+        cascade="all, delete-orphan",
+    )
 
 class Word(Base):
     __tablename__ = "words"
     id = Column(Integer, primary_key=True, index=True)
-    vocab_id = Column(Integer, ForeignKey("vocabularies.id"))
-    term = Column(String, nullable=False)
+    vocab_id = Column(Integer, ForeignKey("vocabularies.id"), nullable=False)
+    # 기존 SQLite의 term 컬럼은 유지하면서 Python/API에서는 word로 사용합니다.
+    word = Column("term", String, nullable=False)
     meaning = Column(String, nullable=False)
 
-    words = relationship("Vocabulary", back_populates="words")
+    vocab = relationship("Vocabulary", back_populates="words")

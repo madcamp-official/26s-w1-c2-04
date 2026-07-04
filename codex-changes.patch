@@ -1,0 +1,1078 @@
+diff --git a/.gitignore b/.gitignore
+index a547bf3..7f33892 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -22,3 +22,9 @@ dist-ssr
+ *.njsproj
+ *.sln
+ *.sw?
++
++# Python
++__pycache__/
++*.py[cod]
++.venv/
++*.db
+diff --git a/backend/requirements.txt b/backend/requirements.txt
+new file mode 100644
+index 0000000..5974f0c
+--- /dev/null
++++ b/backend/requirements.txt
+@@ -0,0 +1,4 @@
++fastapi
++uvicorn[standard]
++sqlalchemy
++passlib[bcrypt]
+diff --git a/backend/src/auth.py b/backend/src/auth.py
+index 140cd26..8274b5f 100644
+--- a/backend/src/auth.py
++++ b/backend/src/auth.py
+@@ -1,3 +1,3 @@
+ from fastapi.security import OAuth2PasswordBearer
+ 
+-oauth2_scheme= OAuth2PasswordBearer(tokenURL="login")
++oauth2_scheme= OAuth2PasswordBearer(tokenUrl="login")
+diff --git a/backend/src/database.py b/backend/src/database.py
+index 52e391d..6ea75a7 100644
+--- a/backend/src/database.py
++++ b/backend/src/database.py
+@@ -1,7 +1,6 @@
+ # backend/database.py
+ from sqlalchemy import create_engine
+-from sqlalchemy.ext.declarative import declarative_base
+-from sqlalchemy.orm import sessionmaker
++from sqlalchemy.orm import declarative_base, sessionmaker
+ 
+ # SQLite를 사용할 경우의 설정 (파일 기반 DB)
+ SQLALCHEMY_DATABASE_URL = "sqlite:///./wordnote.db"
+diff --git a/backend/src/main.py b/backend/src/main.py
+index eb60612..fa4c291 100644
+--- a/backend/src/main.py
++++ b/backend/src/main.py
+@@ -1,17 +1,31 @@
+-# backend/main.py
+-from fastapi import FastAPI, Depends, HTTPException, status
+-from sqlalchemy.orm import Session
+-from .database import engine, SessionLocal, Base
+-from . import models, schemas # schemas는 아래에서 설명할 예정입니다
++from fastapi import Depends, FastAPI, HTTPException, status
++from fastapi.middleware.cors import CORSMiddleware
+ from passlib.context import CryptContext
+-from .auth import oauth2_scheme
++from sqlalchemy.exc import IntegrityError
++from sqlalchemy.orm import Session
++
++from . import models, schemas
++from .database import Base, SessionLocal, engine
++
+ 
+-# 이 코드가 데이터베이스에 테이블을 생성해줍니다.
+ Base.metadata.create_all(bind=engine)
+ 
+ app = FastAPI()
+ 
+-# DB 세션 의존성 주입 (이 함수를 통해 API마다 DB 통로를 관리합니다)
++app.add_middleware(
++    CORSMiddleware,
++    allow_origins=[
++        "http://localhost:5173",
++        "http://127.0.0.1:5173",
++    ],
++    allow_credentials=True,
++    allow_methods=["*"],
++    allow_headers=["*"],
++)
++
++pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
++
++
+ def get_db():
+     db = SessionLocal()
+     try:
+@@ -19,133 +33,201 @@ def get_db():
+     finally:
+         db.close()
+ 
+-#단어장 추가
+-@app.post("/vocabs/", response_model=schemas.Vocabulary) 
++
++@app.get("/api/data")
++def read_root():
++    return {"message": "Hello from FastAPI!"}
++
++
++@app.post(
++    "/users/",
++    response_model=schemas.UserResponse,
++    status_code=status.HTTP_201_CREATED,
++)
++def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
++    db_user = models.User(
++        username=user.username,
++        hashed_password=pwd_context.hash(user.password),
++    )
++    db.add(db_user)
++
++    try:
++        db.commit()
++    except IntegrityError:
++        db.rollback()
++        raise HTTPException(
++            status_code=status.HTTP_409_CONFLICT,
++            detail="이미 사용 중인 아이디입니다.",
++        )
++
++    db.refresh(db_user)
++    return db_user
++
++
++@app.post("/login/", response_model=schemas.LoginResponse)
++def login(user_login: schemas.UserLogin, db: Session = Depends(get_db)):
++    user = (
++        db.query(models.User)
++        .filter(models.User.username == user_login.username)
++        .first()
++    )
++
++    if not user or not pwd_context.verify(
++        user_login.password,
++        user.hashed_password,
++    ):
++        raise HTTPException(
++            status_code=status.HTTP_401_UNAUTHORIZED,
++            detail="아이디 혹은 비밀번호가 일치하지 않습니다.",
++        )
++
++    return {
++        "id": user.id,
++        "username": user.username,
++        "message": "로그인 성공!",
++    }
++
++
++@app.post("/logout/")
++def logout():
++    return {"message": "로그아웃 되었습니다."}
++
++
++@app.get("/vocabs/", response_model=list[schemas.Vocabulary])
++def read_vocabs(owner_id: int, db: Session = Depends(get_db)):
++    return (
++        db.query(models.Vocabulary)
++        .filter(models.Vocabulary.owner_id == owner_id)
++        .all()
++    )
++
++
++@app.post(
++    "/vocabs/",
++    response_model=schemas.Vocabulary,
++    status_code=status.HTTP_201_CREATED,
++)
+ def create_vocab(vocab: schemas.VocabCreate, db: Session = Depends(get_db)):
+-    # main.py에서 수정할 부분
+-    db_vocab = models.Vocabulary(title=vocab.title)
++    owner = (
++        db.query(models.User)
++        .filter(models.User.id == vocab.owner_id)
++        .first()
++    )
++    if not owner:
++        raise HTTPException(
++            status_code=status.HTTP_404_NOT_FOUND,
++            detail="사용자를 찾을 수 없습니다.",
++        )
++
++    db_vocab = models.Vocabulary(
++        title=vocab.title,
++        owner_id=vocab.owner_id,
++    )
+     db.add(db_vocab)
+     db.commit()
+     db.refresh(db_vocab)
+     return db_vocab
+ 
+-# 모든 단어장 조회
+-@app.get("/vocabs/")
+-def read_vocab(db: Session = Depends(get_db)):
+-    vocabs = db.query(models.Vocabulary).all()
+-    return vocabs
+ 
+-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+-
+-#단어장 삭제
+ @app.delete("/vocabs/{vocabulary_id}")
+ def delete_vocab(vocabulary_id: int, db: Session = Depends(get_db)):
+-    vocabulary = db.query(models.Vocabulary).filter(models.Vocabulary.id == vocabulary_id).first()
+-    
++    vocabulary = (
++        db.query(models.Vocabulary)
++        .filter(models.Vocabulary.id == vocabulary_id)
++        .first()
++    )
+     if not vocabulary:
+         raise HTTPException(
+             status_code=status.HTTP_404_NOT_FOUND,
+-            detail="삭제할 단어장을 찾을 수 없습니다."
++            detail="삭제할 단어장을 찾을 수 없습니다.",
+         )
+-    
+-    # 2. 삭제 수행
++
+     db.delete(vocabulary)
+     db.commit()
+-    
+-    return {"message": "Vocabulary successfully deleted"}
+-
+- # 2. 단어 추가 API (POST)
+-@app.post("/words/", response_model=schemas.Word) # 응답 형태를 Schema로 지정
+-def create_word(word: schemas.WordCreate, db: Session = Depends(get_db)):
+-    # main.py에서 수정할 부분
+-    db_word = models.Word(term=word.term, meaning=word.meaning)
++    return {"message": "단어장이 삭제되었습니다."}
++
++
++@app.get(
++    "/vocabs/{vocabulary_id}/words/",
++    response_model=list[schemas.Word],
++)
++def read_words(vocabulary_id: int, db: Session = Depends(get_db)):
++    return (
++        db.query(models.Word)
++        .filter(models.Word.vocab_id == vocabulary_id)
++        .all()
++    )
++
++
++@app.post(
++    "/vocabs/{vocabulary_id}/words/",
++    response_model=schemas.Word,
++    status_code=status.HTTP_201_CREATED,
++)
++def create_word(
++    vocabulary_id: int,
++    word: schemas.WordCreate,
++    db: Session = Depends(get_db),
++):
++    vocabulary = (
++        db.query(models.Vocabulary)
++        .filter(models.Vocabulary.id == vocabulary_id)
++        .first()
++    )
++    if not vocabulary:
++        raise HTTPException(
++            status_code=status.HTTP_404_NOT_FOUND,
++            detail="단어장을 찾을 수 없습니다.",
++        )
++
++    db_word = models.Word(
++        vocab_id=vocabulary_id,
++        word=word.word,
++        meaning=word.meaning,
++    )
+     db.add(db_word)
+     db.commit()
+     db.refresh(db_word)
+     return db_word
+ 
+-# 3. 모든 단어 조회 API (GET)
+-@app.get("/words/")
+-def read_words(db: Session = Depends(get_db)):
+-    words = db.query(models.Word).all()
+-    return words
+ 
+-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+-
+-#단어 혹은 뜻 수정하기
+ @app.put("/words/{word_id}", response_model=schemas.Word)
+-def update_word(word_id: int, word_update: schemas.WordUpdate, db: Session = Depends(get_db)):
+-    # 1. 수정할 단어 찾기
+-    db_word = db.query(models.Word).filter(models.Word.id == word_id).first()
+-    
++def update_word(
++    word_id: int,
++    word_update: schemas.WordUpdate,
++    db: Session = Depends(get_db),
++):
++    db_word = (
++        db.query(models.Word)
++        .filter(models.Word.id == word_id)
++        .first()
++    )
+     if not db_word:
+-        raise HTTPException(status_code=404, detail="수정할 단어를 찾을 수 없습니다.")
+-    
+-    # 2. 값 변경 (Update)
+-    db_word.new_term = word_update.new_term
+-    db_word.new_meaning = word_update.new_meaning
+-    
+-    # 3. DB에 저장
++        raise HTTPException(
++            status_code=status.HTTP_404_NOT_FOUND,
++            detail="수정할 단어를 찾을 수 없습니다.",
++        )
++
++    db_word.word = word_update.word
++    db_word.meaning = word_update.meaning
+     db.commit()
+     db.refresh(db_word)
+-    
+     return db_word
+ 
+-#단어 삭제
++
+ @app.delete("/words/{word_id}")
+ def delete_word(word_id: int, db: Session = Depends(get_db)):
+-    word = db.query(models.Word).filter(models.Word.id == word_id).first()
+-    
++    word = (
++        db.query(models.Word)
++        .filter(models.Word.id == word_id)
++        .first()
++    )
+     if not word:
+         raise HTTPException(
+             status_code=status.HTTP_404_NOT_FOUND,
+-            detail="삭제할 단어를 찾을 수 없습니다."
++            detail="삭제할 단어를 찾을 수 없습니다.",
+         )
+-    
+-    # 2. 삭제 수행
+-    db.delete(word)
+-    db.commit()
+-    
+-    return {"message": "Word successfully deleted"}
+ 
+-@app.post("/users/", response_model=schemas.UserResponse)
+-def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+-    # 1. 비밀번호 해싱
+-    hashed_pw = pwd_context.hash(user.password)
+-    
+-    # 2. 모델 객체 생성
+-    db_user = models.User(username=user.username, hashed_password=hashed_pw)
+-    
+-    # 3. DB 저장
+-    db.add(db_user)
++    db.delete(word)
+     db.commit()
+-    db.refresh(db_user)
+-    return db_user
+-
+-
+-@app.post("/login/")
+-def login(user_login: schemas.UserLogin, db: Session = Depends(get_db)):
+-    # 1. 아이디로 사용자 조회
+-    user = db.query(models.User).filter(models.User.username == user_login.username).first()
+-    
+-    # 2. 아이디가 존재하지 않는 경우
+-    if not user:
+-        raise HTTPException(
+-            status_code=status.HTTP_404_NOT_FOUND,
+-            detail="아이디가 존재하지 않습니다. 회원가입을 해주세요."
+-        )
+-    
+-    # 3. 비밀번호가 일치하지 않는 경우
+-    if not pwd_context.verify(user_login.password, user.hashed_password):
+-        raise HTTPException(
+-            status_code=status.HTTP_401_UNAUTHORIZED,
+-            detail="아이디 혹은 비밀번호가 일치하지 않습니다."
+-        )
+-    
+-    # 4. 로그인 성공
+-    return {"message": "로그인 성공!"}
+-
+-@app.post("/logout/")
+-def logout(token: str = Depends(oauth2_scheme)):
+-    return {"message": "로그아웃 되었습니다."}
+-
++    return {"message": "단어가 삭제되었습니다."}
+diff --git a/backend/src/models.py b/backend/src/models.py
+index 12bbfd8..dcc7f40 100644
+--- a/backend/src/models.py
++++ b/backend/src/models.py
+@@ -1,8 +1,6 @@
+ from .database import Base
+ from sqlalchemy import Column, Integer, String, ForeignKey
+-from sqlalchemy.orm import declarative_base, relationship
+-
+-#Base = declarative_base()
++from sqlalchemy.orm import relationship
+ 
+ class User(Base):
+     __tablename__ = "users"
+@@ -10,21 +8,31 @@ class User(Base):
+     username = Column(String, unique=True, nullable=False)
+     hashed_password = Column(String, nullable=False)
+ 
+-    vocabs = relationship("Vocabulary", backref="owner")
++    vocabs = relationship(
++        "Vocabulary",
++        back_populates="owner",
++        cascade="all, delete-orphan",
++    )
+ 
+ class Vocabulary(Base):
+     __tablename__ = "vocabularies"
+     id = Column(Integer, primary_key=True, index=True)
+-    owner_id = Column(Integer, ForeignKey("users.id"))
++    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+     title = Column(String, nullable=False)
+ 
+-    vocab_dict = relationship("Word", back_populates="vocab")
++    owner = relationship("User", back_populates="vocabs")
++    words = relationship(
++        "Word",
++        back_populates="vocab",
++        cascade="all, delete-orphan",
++    )
+ 
+ class Word(Base):
+     __tablename__ = "words"
+     id = Column(Integer, primary_key=True, index=True)
+-    vocab_id = Column(Integer, ForeignKey("vocabularies.id"))
+-    term = Column(String, nullable=False)
++    vocab_id = Column(Integer, ForeignKey("vocabularies.id"), nullable=False)
++    # 기존 SQLite의 term 컬럼은 유지하면서 Python/API에서는 word로 사용합니다.
++    word = Column("term", String, nullable=False)
+     meaning = Column(String, nullable=False)
+ 
+-    words = relationship("Vocabulary", back_populates="words")
++    vocab = relationship("Vocabulary", back_populates="words")
+diff --git a/backend/src/schemas.py b/backend/src/schemas.py
+index 0134a74..8959995 100644
+--- a/backend/src/schemas.py
++++ b/backend/src/schemas.py
+@@ -1,44 +1,51 @@
+-# backend/schemas.py
+-from pydantic import BaseModel
++from pydantic import BaseModel, ConfigDict, Field
++
+ 
+-# 데이터를 추가할 때 사용할 형식
+ class WordCreate(BaseModel):
+-    term: str
++    word: str
+     meaning: str
+ 
+-# 데이터를 조회할 때 보여줄 형식
++
++class WordUpdate(WordCreate):
++    pass
++
++
+ class Word(WordCreate):
+-    id: int
++    model_config = ConfigDict(from_attributes=True)
+ 
+-    class Config:
+-        from_attributes = True # ORM 객체를 Pydantic 모델로 변환 가능하게 함
++    id: int
++    vocab_id: int
+ 
+-class WordUpdate(BaseModel):
+-    new_term: str
+-    new_meaning: str
+ 
+ class VocabCreate(BaseModel):
+-    title:str
++    title: str
++    owner_id: int
++
++
++class Vocabulary(BaseModel):
++    model_config = ConfigDict(from_attributes=True)
+ 
+-# 데이터를 조회할 때 보여줄 형식
+-class Vocabulary(VocabCreate):
+     id: int
++    title: str
+     owner_id: int
++    words: list[Word] = Field(default_factory=list)
+ 
+-    class Config:
+-        from_attributes = True 
+ 
+ class UserLogin(BaseModel):
+     username: str
+     password: str
+ 
+-class UserCreate(BaseModel):
+-    username: str
+-    password: str
++
++class UserCreate(UserLogin):
++    pass
++
+ 
+ class UserResponse(BaseModel):
++    model_config = ConfigDict(from_attributes=True)
++
+     id: int
+     username: str
+ 
+-    class Config:
+-        from_atts = True
++
++class LoginResponse(UserResponse):
++    message: str
+diff --git a/src/App.css b/src/App.css
+index ee514e7..df2c724 100644
+--- a/src/App.css
++++ b/src/App.css
+@@ -64,6 +64,20 @@
+   font-size: 14px;
+ }
+ 
++.api-error {
++  width: 100%;
++  max-width: 960px;
++  margin: 0 auto 18px;
++  box-sizing: border-box;
++  color: #dc2626;
++  font-size: 14px;
++}
++
++.login-form button:disabled {
++  cursor: wait;
++  opacity: 0.65;
++}
++
+ .vocab-page {
+   width: 100%;
+   min-height: 100vh;
+diff --git a/src/App.tsx b/src/App.tsx
+index 8695494..71ca952 100644
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -1,5 +1,6 @@
+ import { useState } from 'react'
+ import VocabListPage from './pages/VocabListPage'
++import { login, logout } from './api/authApi'
+ import './App.css'
+ 
+ function App() {
+@@ -7,10 +8,11 @@ function App() {
+   const [username, setUsername] = useState('')
+   const [password, setPassword] = useState('')
+ 
+-  const [isLoggedIn, setIsLoggedIn] = useState(false)
++  const [userId, setUserId] = useState<number | null>(null)
+   const [error, setError] = useState('')
++  const [isSubmitting, setIsSubmitting] = useState(false)
+ 
+-  function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
++  async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
+     event.preventDefault()
+ 
+     if (!username.trim() || !password.trim()) {
+@@ -18,14 +20,39 @@ function App() {
+       return
+     }
+ 
+-    setError('')
+-    setIsLoggedIn(true)
++    setIsSubmitting(true)
++
++    try {
++      const user = await login(username.trim(), password)
++      setUsername(user.username)
++      setUserId(user.id)
++      setError('')
++    } catch (requestError) {
++      setError(
++        requestError instanceof Error
++          ? requestError.message
++          : '로그인에 실패했습니다.',
++      )
++    } finally {
++      setIsSubmitting(false)
++    }
++  }
++
++  async function handleLogout() {
++    try {
++      await logout()
++    } finally {
++      setUserId(null)
++      setPassword('')
++    }
+   }
+-  if (isLoggedIn) {
++
++  if (userId !== null) {
+     return (
+       <VocabListPage
++        userId={userId}
+         username={username}
+-        onLogout={() => setIsLoggedIn(false)}
++        onLogout={handleLogout}
+       />
+     )
+   }
+@@ -56,11 +83,13 @@ function App() {
+             />
+           </label>
+           {error && <p className="error-message">{error}</p>}
+-          <button type="submit">로그인</button>
++          <button type="submit" disabled={isSubmitting}>
++            {isSubmitting ? '로그인 중...' : '로그인'}
++          </button>
+         </form>
+       </section>
+     </main>
+   )
+ }
+ 
+-export default App
+\ No newline at end of file
++export default App
+diff --git a/src/api/authApi.ts b/src/api/authApi.ts
+new file mode 100644
+index 0000000..d7ffacb
+--- /dev/null
++++ b/src/api/authApi.ts
+@@ -0,0 +1,20 @@
++import { apiRequest } from './client'
++
++export type LoginResponse = {
++  id: number
++  username: string
++  message: string
++}
++
++export function login(username: string, password: string) {
++  return apiRequest<LoginResponse>('/login/', {
++    method: 'POST',
++    body: JSON.stringify({ username, password }),
++  })
++}
++
++export function logout() {
++  return apiRequest<{ message: string }>('/logout/', {
++    method: 'POST',
++  })
++}
+diff --git a/src/api/client.ts b/src/api/client.ts
+new file mode 100644
+index 0000000..9a3f9ee
+--- /dev/null
++++ b/src/api/client.ts
+@@ -0,0 +1,33 @@
++const API_BASE_URL =
++  import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8000'
++
++export async function apiRequest<T>(
++  path: string,
++  options: RequestInit = {},
++): Promise<T> {
++  const headers = new Headers(options.headers)
++
++  if (options.body && !headers.has('Content-Type')) {
++    headers.set('Content-Type', 'application/json')
++  }
++
++  const response = await fetch(`${API_BASE_URL}${path}`, {
++    ...options,
++    headers,
++  })
++
++  if (!response.ok) {
++    let message = `요청에 실패했습니다. (${response.status})`
++
++    try {
++      const errorBody = (await response.json()) as { detail?: string }
++      if (errorBody.detail) message = errorBody.detail
++    } catch {
++      // JSON 형식의 오류 응답이 아니면 기본 메시지를 사용합니다.
++    }
++
++    throw new Error(message)
++  }
++
++  return (await response.json()) as T
++}
+diff --git a/src/api/vocabularyApi.ts b/src/api/vocabularyApi.ts
+new file mode 100644
+index 0000000..c38a893
+--- /dev/null
++++ b/src/api/vocabularyApi.ts
+@@ -0,0 +1,42 @@
++import type { Vocab, WordEntry } from '../types/vocabulary'
++import { apiRequest } from './client'
++
++export function getVocabs(ownerId: number) {
++  return apiRequest<Vocab[]>(`/vocabs/?owner_id=${ownerId}`)
++}
++
++export function createVocab(title: string, ownerId: number) {
++  return apiRequest<Vocab>('/vocabs/', {
++    method: 'POST',
++    body: JSON.stringify({
++      title,
++      owner_id: ownerId,
++    }),
++  })
++}
++
++export function deleteVocab(vocabId: number) {
++  return apiRequest<{ message: string }>(`/vocabs/${vocabId}`, {
++    method: 'DELETE',
++  })
++}
++
++export function createWord(vocabId: number, word: string, meaning: string) {
++  return apiRequest<WordEntry>(`/vocabs/${vocabId}/words/`, {
++    method: 'POST',
++    body: JSON.stringify({ word, meaning }),
++  })
++}
++
++export function updateWord(wordId: number, word: string, meaning: string) {
++  return apiRequest<WordEntry>(`/words/${wordId}`, {
++    method: 'PUT',
++    body: JSON.stringify({ word, meaning }),
++  })
++}
++
++export function deleteWord(wordId: number) {
++  return apiRequest<{ message: string }>(`/words/${wordId}`, {
++    method: 'DELETE',
++  })
++}
+diff --git a/src/pages/VocabDetailPage.tsx b/src/pages/VocabDetailPage.tsx
+index 9407409..09aad9c 100644
+--- a/src/pages/VocabDetailPage.tsx
++++ b/src/pages/VocabDetailPage.tsx
+@@ -3,14 +3,20 @@ import type { Vocab } from '../types/vocabulary'
+ 
+ type VocabDetailPageProps = {
+   vocab: Vocab
++  requestError: string
+   onBack: () => void
+-  onAddWord: (word: string, meaning: string) => void
+-  onUpdateWord: (wordId: number, word: string, meaning: string) => void
+-  onDeleteWords: (wordIds: number[]) => void
++  onAddWord: (word: string, meaning: string) => Promise<void>
++  onUpdateWord: (
++    wordId: number,
++    word: string,
++    meaning: string,
++  ) => Promise<void>
++  onDeleteWords: (wordIds: number[]) => Promise<void>
+ }
+ 
+ function VocabDetailPage({
+   vocab,
++  requestError,
+   onBack,
+   onAddWord,
+   onUpdateWord,
+@@ -32,7 +38,7 @@ function VocabDetailPage({
+     setEditingWordId(null)
+   }
+ 
+-  function handleSaveWord(event: React.SubmitEvent<HTMLFormElement>) {
++  async function handleSaveWord(event: React.SubmitEvent<HTMLFormElement>) {
+     event.preventDefault()
+ 
+     const trimmedWord = word.trim()
+@@ -43,14 +49,18 @@ function VocabDetailPage({
+       return
+     }
+ 
+-    if (formMode === 'edit' && editingWordId !== null) {
+-      onUpdateWord(editingWordId, trimmedWord, trimmedMeaning)
+-      setSelectedWordIds([])
+-    } else {
+-      onAddWord(trimmedWord, trimmedMeaning)
++    try {
++      if (formMode === 'edit' && editingWordId !== null) {
++        await onUpdateWord(editingWordId, trimmedWord, trimmedMeaning)
++        setSelectedWordIds([])
++      } else {
++        await onAddWord(trimmedWord, trimmedMeaning)
++      }
++
++      resetForm()
++    } catch {
++      // 부모 컴포넌트에서 서버 오류 메시지를 표시합니다.
+     }
+-
+-    resetForm()
+   }
+ 
+   function handleShowAddForm() {
+@@ -80,15 +90,19 @@ function VocabDetailPage({
+     setError('')
+   }
+ 
+-  function handleDeleteSelected() {
++  async function handleDeleteSelected() {
+     if (selectedWordIds.length === 0) {
+       setError('삭제할 단어를 선택해 주세요.')
+       return
+     }
+ 
+-    onDeleteWords(selectedWordIds)
+-    setSelectedWordIds([])
+-    resetForm()
++    try {
++      await onDeleteWords(selectedWordIds)
++      setSelectedWordIds([])
++      resetForm()
++    } catch {
++      // 부모 컴포넌트에서 서버 오류 메시지를 표시합니다.
++    }
+   }
+ 
+   function handleToggleWord(wordId: number) {
+@@ -184,6 +198,7 @@ function VocabDetailPage({
+       )}
+ 
+       {!formMode && error && <p className="detail-message">{error}</p>}
++      {requestError && <p className="detail-message">{requestError}</p>}
+ 
+       {vocab.words.length === 0 ? (
+         <section className="empty-words">
+diff --git a/src/pages/VocabListPage.tsx b/src/pages/VocabListPage.tsx
+index fed2894..bca1cc7 100644
+--- a/src/pages/VocabListPage.tsx
++++ b/src/pages/VocabListPage.tsx
+@@ -1,90 +1,154 @@
+-import { useState } from 'react'
++import { useEffect, useState } from 'react'
++import {
++    createVocab,
++    createWord,
++    deleteVocab,
++    deleteWord,
++    getVocabs,
++    updateWord,
++} from '../api/vocabularyApi'
+ import type { Vocab } from '../types/vocabulary'
+ import VocabDetailPage from './VocabDetailPage'
+ 
+ type VocabListPageProps = {
++    userId: number
+     username: string
+     onLogout: () => void
+ }
+ 
+-function VocabListPage({ username, onLogout }: VocabListPageProps) {
++function VocabListPage({ userId, username, onLogout }: VocabListPageProps) {
+     const [vocabTitle, setVocabTitle] = useState('')
+     const [vocabs, setVocabs] = useState<Vocab[]>([])
+     const [selectedVocabId, setSelectedVocabId] = useState<number | null>(null)
++    const [isLoading, setIsLoading] = useState(true)
++    const [requestError, setRequestError] = useState('')
++
++    useEffect(() => {
++        let isCancelled = false
++
++        async function loadVocabs() {
++            try {
++                const loadedVocabs = await getVocabs(userId)
++                if (!isCancelled) {
++                    setVocabs(loadedVocabs)
++                    setRequestError('')
++                }
++            } catch (error) {
++                if (!isCancelled) setRequestError(getErrorMessage(error))
++            } finally {
++                if (!isCancelled) setIsLoading(false)
++            }
++        }
++
++        loadVocabs()
++
++        return () => {
++            isCancelled = true
++        }
++    }, [userId])
++
++    function getErrorMessage(error: unknown) {
++        return error instanceof Error
++            ? error.message
++            : '서버 요청에 실패했습니다.'
++    }
+ 
+-    function handleAddVocab(event: React.SubmitEvent<HTMLFormElement>) {
++    async function handleAddVocab(event: React.SubmitEvent<HTMLFormElement>) {
+         event.preventDefault()
+ 
+         const title = vocabTitle.trim()
+         if (!title) return
+ 
+-        const newVocab = {
+-            id: Date.now(),
+-            title,
+-            words: [],
++        try {
++            const newVocab = await createVocab(title, userId)
++            setVocabs((currentVocabs) => [...currentVocabs, newVocab])
++            setVocabTitle('')
++            setRequestError('')
++        } catch (error) {
++            setRequestError(getErrorMessage(error))
+         }
+-
+-        setVocabs((currentVocabs) => [...currentVocabs, newVocab])
+-        setVocabTitle('')
+     }
+ 
+-    function handleDeleteVocab(id: number) {
+-        setVocabs((currentVocabs) =>
+-            currentVocabs.filter((vocab) => vocab.id !== id),
+-        )
++    async function handleDeleteVocab(id: number) {
++        try {
++            await deleteVocab(id)
++            setVocabs((currentVocabs) =>
++                currentVocabs.filter((vocab) => vocab.id !== id),
++            )
++            setRequestError('')
++        } catch (error) {
++            setRequestError(getErrorMessage(error))
++        }
+     }
+ 
+-    function handleAddWord(vocabId: number, word: string, meaning: string) {
+-        setVocabs((currentVocabs) =>
+-            currentVocabs.map((vocab) =>
+-                vocab.id === vocabId
+-                    ? {
+-                        ...vocab,
+-                        words: [
+-                            ...vocab.words,
+-                            { id: Date.now(), word, meaning },
+-                        ],
+-                    }
+-                    : vocab,
+-            ),
+-        )
++    async function handleAddWord(
++        vocabId: number,
++        word: string,
++        meaning: string,
++    ) {
++        try {
++            const newWord = await createWord(vocabId, word, meaning)
++            setVocabs((currentVocabs) =>
++                currentVocabs.map((vocab) =>
++                    vocab.id === vocabId
++                        ? { ...vocab, words: [...vocab.words, newWord] }
++                        : vocab,
++                ),
++            )
++            setRequestError('')
++        } catch (error) {
++            setRequestError(getErrorMessage(error))
++            throw error
++        }
+     }
+ 
+-    function handleUpdateWord(
++    async function handleUpdateWord(
+         vocabId: number,
+         wordId: number,
+         word: string,
+         meaning: string,
+     ) {
+-        setVocabs((currentVocabs) =>
+-            currentVocabs.map((vocab) =>
+-                vocab.id === vocabId
+-                    ? {
+-                        ...vocab,
+-                        words: vocab.words.map((entry) =>
+-                            entry.id === wordId
+-                                ? { ...entry, word, meaning }
+-                                : entry,
+-                        ),
+-                    }
+-                    : vocab,
+-            ),
+-        )
++        try {
++            const updatedWord = await updateWord(wordId, word, meaning)
++            setVocabs((currentVocabs) =>
++                currentVocabs.map((vocab) =>
++                    vocab.id === vocabId
++                        ? {
++                            ...vocab,
++                            words: vocab.words.map((entry) =>
++                                entry.id === wordId ? updatedWord : entry,
++                            ),
++                        }
++                        : vocab,
++                ),
++            )
++            setRequestError('')
++        } catch (error) {
++            setRequestError(getErrorMessage(error))
++            throw error
++        }
+     }
+ 
+-    function handleDeleteWords(vocabId: number, wordIds: number[]) {
+-        setVocabs((currentVocabs) =>
+-            currentVocabs.map((vocab) =>
+-                vocab.id === vocabId
+-                    ? {
+-                        ...vocab,
+-                        words: vocab.words.filter(
+-                            (entry) => !wordIds.includes(entry.id),
+-                        ),
+-                    }
+-                    : vocab,
+-            ),
+-        )
++    async function handleDeleteWords(vocabId: number, wordIds: number[]) {
++        try {
++            await Promise.all(wordIds.map((wordId) => deleteWord(wordId)))
++            setVocabs((currentVocabs) =>
++                currentVocabs.map((vocab) =>
++                    vocab.id === vocabId
++                        ? {
++                            ...vocab,
++                            words: vocab.words.filter(
++                                (entry) => !wordIds.includes(entry.id),
++                            ),
++                        }
++                        : vocab,
++                ),
++            )
++            setRequestError('')
++        } catch (error) {
++            setRequestError(getErrorMessage(error))
++            throw error
++        }
+     }
+ 
+     const selectedVocab = vocabs.find((vocab) => vocab.id === selectedVocabId)
+@@ -93,7 +157,11 @@ function VocabListPage({ username, onLogout }: VocabListPageProps) {
+         return (
+             <VocabDetailPage
+                 vocab={selectedVocab}
+-                onBack={() => setSelectedVocabId(null)}
++                requestError={requestError}
++                onBack={() => {
++                    setSelectedVocabId(null)
++                    setRequestError('')
++                }}
+                 onAddWord={(word, meaning) =>
+                     handleAddWord(selectedVocab.id, word, meaning)
+                 }
+@@ -133,7 +201,13 @@ function VocabListPage({ username, onLogout }: VocabListPageProps) {
+                 <button type="submit">추가</button>
+             </form>
+ 
+-            {vocabs.length === 0 ? (
++            {requestError && <p className="api-error">{requestError}</p>}
++
++            {isLoading ? (
++                <section className="empty-vocab">
++                    <h2>단어장을 불러오는 중입니다</h2>
++                </section>
++            ) : vocabs.length === 0 ? (
+                 <section className="empty-vocab">
+ 
+                     <h2>아직 단어장이 없습니다</h2>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import VocabListPage from './pages/VocabListPage'
+import { login, logout } from './api/authApi'
 import './App.css'
 
 function App() {
@@ -7,10 +8,11 @@ function App() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [userId, setUserId] = useState<number | null>(null)
   const [error, setError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault()
 
     if (!username.trim() || !password.trim()) {
@@ -18,14 +20,39 @@ function App() {
       return
     }
 
-    setError('')
-    setIsLoggedIn(true)
+    setIsSubmitting(true)
+
+    try {
+      const user = await login(username.trim(), password)
+      setUsername(user.username)
+      setUserId(user.id)
+      setError('')
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : '로그인에 실패했습니다.',
+      )
+    } finally {
+      setIsSubmitting(false)
+    }
   }
-  if (isLoggedIn) {
+
+  async function handleLogout() {
+    try {
+      await logout()
+    } finally {
+      setUserId(null)
+      setPassword('')
+    }
+  }
+
+  if (userId !== null) {
     return (
       <VocabListPage
+        userId={userId}
         username={username}
-        onLogout={() => setIsLoggedIn(false)}
+        onLogout={handleLogout}
       />
     )
   }
@@ -56,7 +83,9 @@ function App() {
             />
           </label>
           {error && <p className="error-message">{error}</p>}
-          <button type="submit">로그인</button>
+          <button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? '로그인 중...' : '로그인'}
+          </button>
         </form>
       </section>
     </main>

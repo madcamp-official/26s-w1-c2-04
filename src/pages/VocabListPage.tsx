@@ -1,90 +1,154 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import {
+    createVocab,
+    createWord,
+    deleteVocab,
+    deleteWord,
+    getVocabs,
+    updateWord,
+} from '../api/vocabularyApi'
 import type { Vocab } from '../types/vocabulary'
 import VocabDetailPage from './VocabDetailPage'
 
 type VocabListPageProps = {
+    userId: number
     username: string
     onLogout: () => void
 }
 
-function VocabListPage({ username, onLogout }: VocabListPageProps) {
+function VocabListPage({ userId, username, onLogout }: VocabListPageProps) {
     const [vocabTitle, setVocabTitle] = useState('')
     const [vocabs, setVocabs] = useState<Vocab[]>([])
     const [selectedVocabId, setSelectedVocabId] = useState<number | null>(null)
+    const [isLoading, setIsLoading] = useState(true)
+    const [requestError, setRequestError] = useState('')
 
-    function handleAddVocab(event: React.SubmitEvent<HTMLFormElement>) {
+    useEffect(() => {
+        let isCancelled = false
+
+        async function loadVocabs() {
+            try {
+                const loadedVocabs = await getVocabs(userId)
+                if (!isCancelled) {
+                    setVocabs(loadedVocabs)
+                    setRequestError('')
+                }
+            } catch (error) {
+                if (!isCancelled) setRequestError(getErrorMessage(error))
+            } finally {
+                if (!isCancelled) setIsLoading(false)
+            }
+        }
+
+        loadVocabs()
+
+        return () => {
+            isCancelled = true
+        }
+    }, [userId])
+
+    function getErrorMessage(error: unknown) {
+        return error instanceof Error
+            ? error.message
+            : '서버 요청에 실패했습니다.'
+    }
+
+    async function handleAddVocab(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault()
 
         const title = vocabTitle.trim()
         if (!title) return
 
-        const newVocab = {
-            id: Date.now(),
-            title,
-            words: [],
+        try {
+            const newVocab = await createVocab(title, userId)
+            setVocabs((currentVocabs) => [...currentVocabs, newVocab])
+            setVocabTitle('')
+            setRequestError('')
+        } catch (error) {
+            setRequestError(getErrorMessage(error))
         }
-
-        setVocabs((currentVocabs) => [...currentVocabs, newVocab])
-        setVocabTitle('')
     }
 
-    function handleDeleteVocab(id: number) {
-        setVocabs((currentVocabs) =>
-            currentVocabs.filter((vocab) => vocab.id !== id),
-        )
+    async function handleDeleteVocab(id: number) {
+        try {
+            await deleteVocab(id)
+            setVocabs((currentVocabs) =>
+                currentVocabs.filter((vocab) => vocab.id !== id),
+            )
+            setRequestError('')
+        } catch (error) {
+            setRequestError(getErrorMessage(error))
+        }
     }
 
-    function handleAddWord(vocabId: number, word: string, meaning: string) {
-        setVocabs((currentVocabs) =>
-            currentVocabs.map((vocab) =>
-                vocab.id === vocabId
-                    ? {
-                        ...vocab,
-                        words: [
-                            ...vocab.words,
-                            { id: Date.now(), word, meaning },
-                        ],
-                    }
-                    : vocab,
-            ),
-        )
+    async function handleAddWord(
+        vocabId: number,
+        word: string,
+        meaning: string,
+    ) {
+        try {
+            const newWord = await createWord(vocabId, word, meaning)
+            setVocabs((currentVocabs) =>
+                currentVocabs.map((vocab) =>
+                    vocab.id === vocabId
+                        ? { ...vocab, words: [...vocab.words, newWord] }
+                        : vocab,
+                ),
+            )
+            setRequestError('')
+        } catch (error) {
+            setRequestError(getErrorMessage(error))
+            throw error
+        }
     }
 
-    function handleUpdateWord(
+    async function handleUpdateWord(
         vocabId: number,
         wordId: number,
         word: string,
         meaning: string,
     ) {
-        setVocabs((currentVocabs) =>
-            currentVocabs.map((vocab) =>
-                vocab.id === vocabId
-                    ? {
-                        ...vocab,
-                        words: vocab.words.map((entry) =>
-                            entry.id === wordId
-                                ? { ...entry, word, meaning }
-                                : entry,
-                        ),
-                    }
-                    : vocab,
-            ),
-        )
+        try {
+            const updatedWord = await updateWord(wordId, word, meaning)
+            setVocabs((currentVocabs) =>
+                currentVocabs.map((vocab) =>
+                    vocab.id === vocabId
+                        ? {
+                            ...vocab,
+                            words: vocab.words.map((entry) =>
+                                entry.id === wordId ? updatedWord : entry,
+                            ),
+                        }
+                        : vocab,
+                ),
+            )
+            setRequestError('')
+        } catch (error) {
+            setRequestError(getErrorMessage(error))
+            throw error
+        }
     }
 
-    function handleDeleteWords(vocabId: number, wordIds: number[]) {
-        setVocabs((currentVocabs) =>
-            currentVocabs.map((vocab) =>
-                vocab.id === vocabId
-                    ? {
-                        ...vocab,
-                        words: vocab.words.filter(
-                            (entry) => !wordIds.includes(entry.id),
-                        ),
-                    }
-                    : vocab,
-            ),
-        )
+    async function handleDeleteWords(vocabId: number, wordIds: number[]) {
+        try {
+            await Promise.all(wordIds.map((wordId) => deleteWord(wordId)))
+            setVocabs((currentVocabs) =>
+                currentVocabs.map((vocab) =>
+                    vocab.id === vocabId
+                        ? {
+                            ...vocab,
+                            words: vocab.words.filter(
+                                (entry) => !wordIds.includes(entry.id),
+                            ),
+                        }
+                        : vocab,
+                ),
+            )
+            setRequestError('')
+        } catch (error) {
+            setRequestError(getErrorMessage(error))
+            throw error
+        }
     }
 
     const selectedVocab = vocabs.find((vocab) => vocab.id === selectedVocabId)
@@ -93,7 +157,11 @@ function VocabListPage({ username, onLogout }: VocabListPageProps) {
         return (
             <VocabDetailPage
                 vocab={selectedVocab}
-                onBack={() => setSelectedVocabId(null)}
+                requestError={requestError}
+                onBack={() => {
+                    setSelectedVocabId(null)
+                    setRequestError('')
+                }}
                 onAddWord={(word, meaning) =>
                     handleAddWord(selectedVocab.id, word, meaning)
                 }
@@ -133,7 +201,13 @@ function VocabListPage({ username, onLogout }: VocabListPageProps) {
                 <button type="submit">추가</button>
             </form>
 
-            {vocabs.length === 0 ? (
+            {requestError && <p className="api-error">{requestError}</p>}
+
+            {isLoading ? (
+                <section className="empty-vocab">
+                    <h2>단어장을 불러오는 중입니다</h2>
+                </section>
+            ) : vocabs.length === 0 ? (
                 <section className="empty-vocab">
 
                     <h2>아직 단어장이 없습니다</h2>

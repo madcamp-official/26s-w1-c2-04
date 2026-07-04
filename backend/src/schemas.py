@@ -1,44 +1,51 @@
-# backend/schemas.py
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 
-# 데이터를 추가할 때 사용할 형식
+
 class WordCreate(BaseModel):
-    term: str
+    word: str
     meaning: str
 
-# 데이터를 조회할 때 보여줄 형식
+
+class WordUpdate(WordCreate):
+    pass
+
+
 class Word(WordCreate):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
+    vocab_id: int
 
-    class Config:
-        from_attributes = True # ORM 객체를 Pydantic 모델로 변환 가능하게 함
-
-class WordUpdate(BaseModel):
-    new_term: str
-    new_meaning: str
 
 class VocabCreate(BaseModel):
-    title:str
-
-# 데이터를 조회할 때 보여줄 형식
-class Vocabulary(VocabCreate):
-    id: int
+    title: str
     owner_id: int
 
-    class Config:
-        from_attributes = True 
+
+class Vocabulary(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    title: str
+    owner_id: int
+    words: list[Word] = Field(default_factory=list)
+
 
 class UserLogin(BaseModel):
     username: str
     password: str
 
-class UserCreate(BaseModel):
-    username: str
-    password: str
+
+class UserCreate(UserLogin):
+    pass
+
 
 class UserResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     username: str
 
-    class Config:
-        from_atts = True
+
+class LoginResponse(UserResponse):
+    message: str

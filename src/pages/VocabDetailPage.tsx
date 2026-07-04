@@ -3,14 +3,20 @@ import type { Vocab } from '../types/vocabulary'
 
 type VocabDetailPageProps = {
   vocab: Vocab
+  requestError: string
   onBack: () => void
-  onAddWord: (word: string, meaning: string) => void
-  onUpdateWord: (wordId: number, word: string, meaning: string) => void
-  onDeleteWords: (wordIds: number[]) => void
+  onAddWord: (word: string, meaning: string) => Promise<void>
+  onUpdateWord: (
+    wordId: number,
+    word: string,
+    meaning: string,
+  ) => Promise<void>
+  onDeleteWords: (wordIds: number[]) => Promise<void>
 }
 
 function VocabDetailPage({
   vocab,
+  requestError,
   onBack,
   onAddWord,
   onUpdateWord,
@@ -32,7 +38,7 @@ function VocabDetailPage({
     setEditingWordId(null)
   }
 
-  function handleSaveWord(event: React.SubmitEvent<HTMLFormElement>) {
+  async function handleSaveWord(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault()
 
     const trimmedWord = word.trim()
@@ -43,14 +49,18 @@ function VocabDetailPage({
       return
     }
 
-    if (formMode === 'edit' && editingWordId !== null) {
-      onUpdateWord(editingWordId, trimmedWord, trimmedMeaning)
-      setSelectedWordIds([])
-    } else {
-      onAddWord(trimmedWord, trimmedMeaning)
-    }
+    try {
+      if (formMode === 'edit' && editingWordId !== null) {
+        await onUpdateWord(editingWordId, trimmedWord, trimmedMeaning)
+        setSelectedWordIds([])
+      } else {
+        await onAddWord(trimmedWord, trimmedMeaning)
+      }
 
-    resetForm()
+      resetForm()
+    } catch {
+      // 부모 컴포넌트에서 서버 오류 메시지를 표시합니다.
+    }
   }
 
   function handleShowAddForm() {
@@ -80,15 +90,19 @@ function VocabDetailPage({
     setError('')
   }
 
-  function handleDeleteSelected() {
+  async function handleDeleteSelected() {
     if (selectedWordIds.length === 0) {
       setError('삭제할 단어를 선택해 주세요.')
       return
     }
 
-    onDeleteWords(selectedWordIds)
-    setSelectedWordIds([])
-    resetForm()
+    try {
+      await onDeleteWords(selectedWordIds)
+      setSelectedWordIds([])
+      resetForm()
+    } catch {
+      // 부모 컴포넌트에서 서버 오류 메시지를 표시합니다.
+    }
   }
 
   function handleToggleWord(wordId: number) {
@@ -184,6 +198,7 @@ function VocabDetailPage({
       )}
 
       {!formMode && error && <p className="detail-message">{error}</p>}
+      {requestError && <p className="detail-message">{requestError}</p>}
 
       {vocab.words.length === 0 ? (
         <section className="empty-words">
