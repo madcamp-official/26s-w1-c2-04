@@ -66,6 +66,7 @@ function App() {
   function handleModeChange(nextMode: 'login' | 'signup') {
     setAuthMode(nextMode)
     setError('')
+    setUsername('')
     setPassword('')
     setPasswordConfirm('')
   }
