@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { login } from '../api/authApi'
 import {
   createVocab,
   createWord,
@@ -28,6 +29,10 @@ function VocabListPage({
   const [selectedVocabId, setSelectedVocabId] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [requestError, setRequestError] = useState('')
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false)
+  const [myPagePassword, setMyPagePassword] = useState('')
+  const [myPagePasswordError, setMyPagePasswordError] = useState('')
+  const [isCheckingPassword, setIsCheckingPassword] = useState(false)
 
   useEffect(() => {
     let isCancelled = false
@@ -159,6 +164,35 @@ function VocabListPage({
     }
   }
 
+  async function handleOpenMyPage(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    if (!myPagePassword) {
+      setMyPagePasswordError('기존 비밀번호를 입력해 주세요.')
+      return
+    }
+
+    setIsCheckingPassword(true)
+
+    try {
+      await login(username, myPagePassword)
+      setMyPagePassword('')
+      setMyPagePasswordError('')
+      setIsPasswordModalOpen(false)
+      onOpenMyPage()
+    } catch {
+      setMyPagePasswordError('기존 비밀번호가 올바르지 않습니다')
+    } finally {
+      setIsCheckingPassword(false)
+    }
+  }
+
+  function handleClosePasswordModal() {
+    setIsPasswordModalOpen(false)
+    setMyPagePassword('')
+    setMyPagePasswordError('')
+  }
+
   const selectedVocab = vocabs.find((vocab) => vocab.id === selectedVocabId)
 
   if (selectedVocab) {
@@ -191,7 +225,11 @@ function VocabListPage({
           <h1>{username}님의 단어장</h1>
         </div>
         <div className="vocab-header-actions">
-          <button className="logout-button" type="button" onClick={onOpenMyPage}>
+          <button
+            className="logout-button"
+            type="button"
+            onClick={() => setIsPasswordModalOpen(true)}
+          >
             회원정보
           </button>
           <button className="logout-button" type="button" onClick={onLogout}>
@@ -247,6 +285,43 @@ function VocabListPage({
             </article>
           ))}
         </section>
+      )}
+
+      {isPasswordModalOpen && (
+        <div className="password-modal-backdrop">
+          <section className="password-modal" role="dialog" aria-modal="true">
+            <h2>비밀번호 확인</h2>
+            <form onSubmit={handleOpenMyPage}>
+              <label>
+                기존 비밀번호
+                <input
+                  type="password"
+                  value={myPagePassword}
+                  onChange={(event) => setMyPagePassword(event.target.value)}
+                  placeholder="기존 비밀번호를 입력하세요"
+                  autoFocus
+                />
+              </label>
+
+              {myPagePasswordError && (
+                <p className="error-message">{myPagePasswordError}</p>
+              )}
+
+              <div className="password-modal-actions">
+                <button
+                  className="cancel-modal-button"
+                  type="button"
+                  onClick={handleClosePasswordModal}
+                >
+                  취소
+                </button>
+                <button type="submit" disabled={isCheckingPassword}>
+                  확인
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
       )}
     </main>
   )

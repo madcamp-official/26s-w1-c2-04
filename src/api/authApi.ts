@@ -37,13 +37,11 @@ export function logout() {
 
 export function changePassword(
   userId: number,
-  currentPassword: string,
   newPassword: string,
 ) {
   return apiRequest<MessageResponse>(`/users/${userId}/password/`, {
     method: 'PUT',
     body: JSON.stringify({
-      current_password: currentPassword,
       new_password: newPassword,
     }),
   })
@@ -51,14 +49,10 @@ export function changePassword(
 
 export function deleteUser(
   userId: number,
-  currentPassword: string,
-  newPassword: string,
 ) {
   return apiRequest<MessageResponse>(`/users/${userId}/`, {
     method: 'DELETE',
     body: JSON.stringify({
-      current_password: currentPassword,
-      new_password: newPassword,
     }),
   })
 }

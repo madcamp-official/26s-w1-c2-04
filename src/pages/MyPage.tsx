@@ -9,8 +9,8 @@ type MyPageProps = {
 }
 
 function MyPage({ userId, username, onBack, onDeleted }: MyPageProps) {
-  const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
+  const [newPasswordConfirm, setNewPasswordConfirm] = useState('')
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -20,9 +20,9 @@ function MyPage({ userId, username, onBack, onDeleted }: MyPageProps) {
   }
 
   function validatePasswords() {
-    if (!currentPassword || !newPassword) {
-      setError('기존 비밀번호와 새로운 비밀번호를 모두 입력해 주세요.')
-      return false
+    if (newPassword !== newPasswordConfirm) {
+      setError('비밀번호가 서로 일치하지 않습니다.')
+      return
     }
 
     return true
@@ -41,13 +41,12 @@ function MyPage({ userId, username, onBack, onDeleted }: MyPageProps) {
     try {
       const response = await changePassword(
         userId,
-        currentPassword,
         newPassword,
       )
       setMessage(response.message)
       setError('')
-      setCurrentPassword('')
       setNewPassword('')
+      setNewPasswordConfirm('')
     } catch (error) {
       setError(getErrorMessage(error))
     } finally {
@@ -58,12 +57,10 @@ function MyPage({ userId, username, onBack, onDeleted }: MyPageProps) {
   async function handleDeleteAccount() {
     setMessage('')
 
-    if (!validatePasswords()) return
-
     setIsSubmitting(true)
 
     try {
-      await deleteUser(userId, currentPassword, newPassword)
+      await deleteUser(userId)
       onDeleted()
     } catch (error) {
       setError(getErrorMessage(error))
@@ -85,21 +82,21 @@ function MyPage({ userId, username, onBack, onDeleted }: MyPageProps) {
 
         <form className="mypage-form" onSubmit={handleChangePassword}>
           <label>
-            기존 비밀번호
-            <input
-              type="password"
-              value={currentPassword}
-              onChange={(event) => setCurrentPassword(event.target.value)}
-              placeholder="기존 비밀번호를 입력하세요"
-            />
-          </label>
-          <label>
             새로운 비밀번호
             <input
               type="password"
               value={newPassword}
               onChange={(event) => setNewPassword(event.target.value)}
               placeholder="새로운 비밀번호를 입력하세요"
+            />
+          </label>
+          <label>
+            새로운 비밀번호 확인
+            <input
+              type="password"
+              value={newPasswordConfirm}
+              onChange={(event) => setNewPasswordConfirm(event.target.value)}
+              placeholder="새로운 비밀번호를 한 번 더 입력하세요"
             />
           </label>
 
