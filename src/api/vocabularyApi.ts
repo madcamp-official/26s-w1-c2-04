@@ -30,7 +30,7 @@ export function createWord(
 ) {
   return apiRequest<WordEntry>(`/vocabs/${vocabId}/words/`, {
     method: 'POST',
-    body: JSON.stringify({ word, meaning, example: examples }),
+    body: JSON.stringify({ word, meaning, examples }),
   })
 }
 
@@ -42,7 +42,7 @@ export function updateWord(
 ) {
   return apiRequest<WordEntry>(`/words/${wordId}`, {
     method: 'PUT',
-    body: JSON.stringify({ word, meaning, example: examples }),
+    body: JSON.stringify({ word, meaning, examples }),
   })
 }
 

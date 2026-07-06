@@ -109,6 +109,33 @@ def logout():
     return {"message": "로그아웃 되었습니다."}
 
 
+@app.put("/users/{userId}/password/")
+def change_password(userId:int,
+                    password_update: schemas.PasswordUpdate,
+                    db: Session = Depends(get_db)):
+    user = (db.query(models.User).filter(models.User.id == userId).first())
+
+    if not user:
+        raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
+    
+    user.hashed_password = pwd_context.hash(password_update.new_password)
+    db.commit()
+
+    return {"message": "비밀번호가 변경되었습니다."}
+
+@app.delete("/users/{userId}/")
+def delete_user(userId:int, 
+                db: Session = Depends(get_db)):
+    user = (db.query(models.User).filter(models.User.id == userId).first())
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
+    
+    db.delete(user)
+    db.commit()
+    return {"message": "회원 탈퇴가 완료되었습니다."}
+    
+
 @app.get("/vocabs/", response_model=list[schemas.Vocabulary])
 def read_vocabs(owner_id: int, db: Session = Depends(get_db)):
     return (
@@ -249,3 +276,4 @@ def delete_word(word_id: int, db: Session = Depends(get_db)):
     db.delete(word)
     db.commit()
     return {"message": "단어가 삭제되었습니다."}
+
