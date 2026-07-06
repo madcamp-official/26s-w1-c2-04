@@ -10,6 +10,7 @@ import {
 } from '../api/vocabularyApi'
 import type { Vocab } from '../types/vocabulary'
 import VocabDetailPage from './VocabDetailPage'
+import CharacterIMG from '../assets/CharacterIMG.png'
 
 type VocabListPageProps = {
   userId: number
@@ -217,12 +218,27 @@ function VocabListPage({
     )
   }
 
+  function Characters(){
+    return(
+      <div>
+        <img src={CharacterIMG}
+        alt="캐릭터"
+        style={{ width: '60px', height: 'auto' }}
+        />
+      </div>
+    )
+  }
+
+
   return (
     <main className="vocab-page">
       <header className="vocab-header">
         <div>
           <p className="vocab-eyebrow">MY VOCABULARY</p>
-          <h1>{username}님의 단어장</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <h1>{username}님의 단어장</h1>
+            <Characters />
+          </div>
         </div>
         <div className="vocab-header-actions">
           <button
