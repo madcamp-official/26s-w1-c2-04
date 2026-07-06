@@ -85,9 +85,10 @@ function VocabListPage({ userId, username, onLogout }: VocabListPageProps) {
     vocabId: number,
     word: string,
     meaning: string,
+    example: string,
   ) {
     try {
-      const newWord = await createWord(vocabId, word, meaning)
+      const newWord = await createWord(vocabId, word, meaning, example)
       setVocabs((currentVocabs) =>
         currentVocabs.map((vocab) =>
           vocab.id === vocabId
@@ -107,9 +108,10 @@ function VocabListPage({ userId, username, onLogout }: VocabListPageProps) {
     wordId: number,
     word: string,
     meaning: string,
+    example: string,
   ) {
     try {
-      const updatedWord = await updateWord(wordId, word, meaning)
+      const updatedWord = await updateWord(wordId, word, meaning, example)
       setVocabs((currentVocabs) =>
         currentVocabs.map((vocab) =>
           vocab.id === vocabId
@@ -162,11 +164,11 @@ function VocabListPage({ userId, username, onLogout }: VocabListPageProps) {
           setSelectedVocabId(null)
           setRequestError('')
         }}
-        onAddWord={(word, meaning) =>
-          handleAddWord(selectedVocab.id, word, meaning)
+        onAddWord={(word, meaning, example) =>
+          handleAddWord(selectedVocab.id, word, meaning, example)
         }
-        onUpdateWord={(wordId, word, meaning) =>
-          handleUpdateWord(selectedVocab.id, wordId, word, meaning)
+        onUpdateWord={(wordId, word, meaning, example) =>
+          handleUpdateWord(selectedVocab.id, wordId, word, meaning, example)
         }
         onDeleteWords={(wordIds) =>
           handleDeleteWords(selectedVocab.id, wordIds)
