@@ -1,3 +1,4 @@
+//CRUD API 호출용도
 import type { Vocab, WordEntry } from '../types/vocabulary'
 import { apiRequest } from './client'
 
