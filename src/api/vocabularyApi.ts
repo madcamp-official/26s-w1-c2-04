@@ -21,17 +21,27 @@ export function deleteVocab(vocabId: number) {
   })
 }
 
-export function createWord(vocabId: number, word: string, meaning: string, example: string) {
+export function createWord(
+  vocabId: number,
+  word: string,
+  meaning: string,
+  examples: string,
+) {
   return apiRequest<WordEntry>(`/vocabs/${vocabId}/words/`, {
     method: 'POST',
-    body: JSON.stringify({ word, meaning, example }),
+    body: JSON.stringify({ word, meaning, example: examples }),
   })
 }
 
-export function updateWord(wordId: number, word: string, meaning: string, example:String) {
+export function updateWord(
+  wordId: number,
+  word: string,
+  meaning: string,
+  examples: string,
+) {
   return apiRequest<WordEntry>(`/words/${wordId}`, {
     method: 'PUT',
-    body: JSON.stringify({ word, meaning, example }),
+    body: JSON.stringify({ word, meaning, example: examples }),
   })
 }
 

@@ -2,7 +2,7 @@ export type WordEntry = {
   id: number
   word: string
   meaning: string
-  example?: string
+  examples?: string
 }
 
 export type Vocab = {

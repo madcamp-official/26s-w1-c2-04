@@ -85,10 +85,10 @@ function VocabListPage({ userId, username, onLogout }: VocabListPageProps) {
     vocabId: number,
     word: string,
     meaning: string,
-    example: string,
+    examples: string,
   ) {
     try {
-      const newWord = await createWord(vocabId, word, meaning, example)
+      const newWord = await createWord(vocabId, word, meaning, examples)
       setVocabs((currentVocabs) =>
         currentVocabs.map((vocab) =>
           vocab.id === vocabId
@@ -108,10 +108,10 @@ function VocabListPage({ userId, username, onLogout }: VocabListPageProps) {
     wordId: number,
     word: string,
     meaning: string,
-    example: string,
+    examples: string,
   ) {
     try {
-      const updatedWord = await updateWord(wordId, word, meaning, example)
+      const updatedWord = await updateWord(wordId, word, meaning, examples)
       setVocabs((currentVocabs) =>
         currentVocabs.map((vocab) =>
           vocab.id === vocabId
@@ -164,11 +164,11 @@ function VocabListPage({ userId, username, onLogout }: VocabListPageProps) {
           setSelectedVocabId(null)
           setRequestError('')
         }}
-        onAddWord={(word, meaning, example) =>
-          handleAddWord(selectedVocab.id, word, meaning, example)
+        onAddWord={(word, meaning, examples) =>
+          handleAddWord(selectedVocab.id, word, meaning, examples)
         }
-        onUpdateWord={(wordId, word, meaning, example) =>
-          handleUpdateWord(selectedVocab.id, wordId, word, meaning, example)
+        onUpdateWord={(wordId, word, meaning, examples) =>
+          handleUpdateWord(selectedVocab.id, wordId, word, meaning, examples)
         }
         onDeleteWords={(wordIds) =>
           handleDeleteWords(selectedVocab.id, wordIds)
