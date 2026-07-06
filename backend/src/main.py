@@ -192,6 +192,7 @@ def create_word(
         vocab_id=vocabulary_id,
         word=word.word,
         meaning=word.meaning,
+        examples = word.examples,
     )
     db.add(db_word)
     db.commit()
@@ -218,6 +219,7 @@ def update_word(
 
     db_word.word = word_update.word
     db_word.meaning = word_update.meaning
+    db_word.examples = word_update.examples
     db.commit()
     db.refresh(db_word)
     return db_word

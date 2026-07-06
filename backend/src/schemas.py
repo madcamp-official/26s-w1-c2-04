@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field
 class WordCreate(BaseModel):
     word: str
     meaning: str
+    examples: str
 
 
 class WordUpdate(WordCreate):
