@@ -10,7 +10,7 @@ import {
 } from '../api/vocabularyApi'
 import type { Vocab } from '../types/vocabulary'
 import VocabDetailPage from './VocabDetailPage'
-import CharacterIMG from '../assets/CharacterIMG.png'
+import CharacterIMG from '../assets/SmartPing.webp'
 
 type VocabListPageProps = {
   userId: number
