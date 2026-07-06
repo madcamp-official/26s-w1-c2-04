@@ -5,11 +5,12 @@ type VocabDetailPageProps = {
   vocab: Vocab
   requestError: string
   onBack: () => void
-  onAddWord: (word: string, meaning: string) => Promise<void>
+  onAddWord: (word: string, meaning: string, example: string) => Promise<void>
   onUpdateWord: (
     wordId: number,
     word: string,
     meaning: string,
+    example: string,
   ) => Promise<void>
   onDeleteWords: (wordIds: number[]) => Promise<void>
 }
@@ -24,6 +25,7 @@ function VocabDetailPage({
 }: VocabDetailPageProps) {
   const [word, setWord] = useState('')
   const [meaning, setMeaning] = useState('')
+  const [example, setExample] = useState('')
   const [search, setSearch] = useState('')
   const [error, setError] = useState('')
   const [formMode, setFormMode] = useState<'add' | 'edit' | null>(null)
@@ -33,6 +35,7 @@ function VocabDetailPage({
   function resetForm() {
     setWord('')
     setMeaning('')
+    setExample('')
     setError('')
     setFormMode(null)
     setEditingWordId(null)
@@ -43,6 +46,7 @@ function VocabDetailPage({
 
     const trimmedWord = word.trim()
     const trimmedMeaning = meaning.trim()
+    const rawExample = example
 
     if (!trimmedWord || !trimmedMeaning) {
       setError('단어와 뜻을 모두 입력해 주세요.')
@@ -51,10 +55,10 @@ function VocabDetailPage({
 
     try {
       if (formMode === 'edit' && editingWordId !== null) {
-        await onUpdateWord(editingWordId, trimmedWord, trimmedMeaning)
+        await onUpdateWord(editingWordId, trimmedWord, trimmedMeaning, rawExample)
         setSelectedWordIds([])
       } else {
-        await onAddWord(trimmedWord, trimmedMeaning)
+        await onAddWord(trimmedWord, trimmedMeaning, rawExample)
       }
 
       resetForm()
@@ -66,6 +70,7 @@ function VocabDetailPage({
   function handleShowAddForm() {
     setWord('')
     setMeaning('')
+    setExample('')
     setError('')
     setEditingWordId(null)
     setFormMode('add')
@@ -85,6 +90,7 @@ function VocabDetailPage({
 
     setWord(selectedWord.word)
     setMeaning(selectedWord.meaning)
+    setExample(selectedWord.example ?? '')
     setEditingWordId(selectedWord.id)
     setFormMode('edit')
     setError('')
@@ -185,6 +191,14 @@ function VocabDetailPage({
               value={meaning}
               onChange={(event) => setMeaning(event.target.value)}
               placeholder="예: 사과"
+            />
+          </label>
+          <label>
+            예문
+            <input
+              value={meaning}
+              onChange={(event) => setExample(event.target.value)}
+              placeholder="예: Apples are delicious"
             />
           </label>
           <button type="submit">
