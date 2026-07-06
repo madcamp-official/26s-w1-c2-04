@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { Vocab } from '../types/vocabulary'
+import QuizPage from './QuizPage'
 
 type VocabDetailPageProps = {
   vocab: Vocab
@@ -31,6 +32,7 @@ function VocabDetailPage({
   const [formMode, setFormMode] = useState<'add' | 'edit' | null>(null)
   const [editingWordId, setEditingWordId] = useState<number | null>(null)
   const [selectedWordIds, setSelectedWordIds] = useState<number[]>([])
+  const [isQuizOpen, setIsQuizOpen] = useState(false)
 
   function resetForm() {
     setWord('')
@@ -125,6 +127,20 @@ function VocabDetailPage({
       entry.word.toLowerCase().includes(normalizedSearch) ||
       entry.meaning.toLowerCase().includes(normalizedSearch),
   )
+  const quizWords =
+    selectedWordIds.length > 0
+      ? vocab.words.filter((entry) => selectedWordIds.includes(entry.id))
+      : vocab.words
+
+  if (isQuizOpen) {
+    return (
+      <QuizPage
+        vocab={vocab}
+        words={quizWords}
+        onBack={() => setIsQuizOpen(false)}
+      />
+    )
+  }
 
   return (
     <main className="detail-page">
@@ -136,7 +152,16 @@ function VocabDetailPage({
           <p className="vocab-eyebrow">VOCABULARY</p>
           <h1>{vocab.title}</h1>
         </div>
-        <span className="word-count">{vocab.words.length}개 단어</span>
+        <div className="detail-header-actions">
+          <button
+            type="button"
+            onClick={() => setIsQuizOpen(true)}
+            disabled={vocab.words.length === 0}
+          >
+            퀴즈 치기
+          </button>
+          <span className="word-count">{vocab.words.length}개 단어</span>
+        </div>
       </header>
 
       <section className="detail-controls">
