@@ -1,9 +1,10 @@
-import { useState } from 'react'
-import VocabListPage from './pages/VocabListPage'
-import { login, logout, signup } from './api/authApi'
+import { useState } from 'react'// react 가져오기
+import VocabListPage from './pages/VocabListPage' //성공시 보여줄 페이지
+import { login, logout, signup } from './api/authApi' //API함수 가져오기-같은 큰 폴더 내 다른 파일
 import './App.css'
 
 function App() {
+  // 상태 변수 설정하기
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [passwordConfirm, setPasswordConfirm] = useState('')
@@ -13,19 +14,19 @@ function App() {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
+    event.preventDefault() // 폼 제출 수 새로고침 방지
 
     const trimmedUsername = username.trim()
 
     if (!trimmedUsername || !password.trim()) {
       setError('아이디와 비밀번호를 모두 입력해 주세요.')
       return
-    }
+    }//아이디 or 비번 공백 에러
 
     if (authMode === 'signup' && password !== passwordConfirm) {
       setError('비밀번호가 서로 일치하지 않습니다.')
       return
-    }
+    } // 비번 불일치 에러
 
     setIsSubmitting(true)
 
@@ -34,12 +35,12 @@ function App() {
         await signup(trimmedUsername, password)
       }
 
-      const user = await login(trimmedUsername, password)
-      setUsername(user.username)
+      const user = await login(trimmedUsername, password) //로그인 API호출
+      setUsername(user.username) //로그인 성공 시 ID저장
       setUserId(user.id)
       setPassword('')
       setPasswordConfirm('')
-      setError('')
+      setError('') //다비우기
     } catch (requestError) {
       setError(
         requestError instanceof Error
@@ -49,15 +50,15 @@ function App() {
             : '로그인에 실패했습니다.',
       )
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false)//로딩 상태 해제
     }
   }
 
-  async function handleLogout() {
+  async function handleLogout() { //로그아웃
     try {
       await logout()
     } finally {
-      setUserId(null)
+      setUserId(null) //ID 초기화로 로그인화면으로 돌아가도록
       setPassword('')
       setPasswordConfirm('')
     }
@@ -71,9 +72,10 @@ function App() {
     setPasswordConfirm('')
   }
 
-  if (userId !== null) {
+  //화면만들기
+  if (userId !== null) {  //로그인된 상태
     return (
-      <VocabListPage
+      <VocabListPage //단어장 페이지 보여줌
         userId={userId}
         username={username}
         onLogout={handleLogout}
@@ -81,7 +83,7 @@ function App() {
     )
   }
 
-  return (
+  return ( //비로그인 상태라면 로그인/회원가입 화면 보여주기 
     <main className="login-page">
       <section className="login-card">
         <h1>Word Book</h1>
@@ -154,4 +156,4 @@ function App() {
   )
 }
 
-export default App
+export default App //다른 파일에서 사용가능하도록 내보내기

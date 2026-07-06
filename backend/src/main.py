@@ -15,9 +15,9 @@ Base.metadata.create_all(bind=engine)
 with engine.begin() as connection:
     columns = connection.execute(text("PRAGMA table_info(words)")).fetchall()
     column_names = {column[1] for column in columns}
-    if "example" not in column_names:
+    if "examples" not in column_names:
         connection.execute(
-            text("ALTER TABLE words ADD COLUMN example VARCHAR NOT NULL DEFAULT ''")
+            text("ALTER TABLE words ADD COLUMN examples VARCHAR NOT NULL DEFAULT ''")
         )
 #engine을 이용해서 생성된 모든 테이블을 DB에 저장
 
