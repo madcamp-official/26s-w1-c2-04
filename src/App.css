@@ -156,6 +156,11 @@
   background: white;
 }
 
+.vocab-header-actions {
+  display: flex;
+  gap: 10px;
+}
+
 .vocab-create-form {
   max-width: 960px;
   margin: 0 auto 32px;
@@ -612,6 +617,91 @@
 .empty-vocab p {
   color: #94a3b8;
   font-size: 15px;
+}
+
+.mypage-page {
+  width: 100%;
+  min-height: 100vh;
+  padding: 48px 24px;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at top right, #dbeafe 0, transparent 32%),
+    #f8fafc;
+  color-scheme: light;
+}
+
+.mypage-card {
+  width: 100%;
+  max-width: 480px;
+  padding: 28px;
+  box-sizing: border-box;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: white;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+}
+
+.mypage-card h1 {
+  margin: 4px 0 24px;
+  color: #172554;
+}
+
+.mypage-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mypage-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #475569;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.mypage-form input {
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: white;
+  color: #0f172a;
+  font-size: 15px;
+}
+
+.mypage-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.mypage-actions button {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
+  font-size: 15px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.mypage-actions button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.mypage-actions .danger-button {
+  background: #dc2626;
+}
+
+.success-message {
+  margin: 0;
+  color: #16a34a;
+  font-size: 14px;
 }
 
 @media (max-width: 600px) {

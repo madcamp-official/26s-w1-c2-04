@@ -14,9 +14,15 @@ type VocabListPageProps = {
   userId: number
   username: string
   onLogout: () => void
+  onOpenMyPage: () => void
 }
 
-function VocabListPage({ userId, username, onLogout }: VocabListPageProps) {
+function VocabListPage({
+  userId,
+  username,
+  onLogout,
+  onOpenMyPage,
+}: VocabListPageProps) {
   const [vocabTitle, setVocabTitle] = useState('')
   const [vocabs, setVocabs] = useState<Vocab[]>([])
   const [selectedVocabId, setSelectedVocabId] = useState<number | null>(null)
@@ -184,9 +190,14 @@ function VocabListPage({ userId, username, onLogout }: VocabListPageProps) {
           <p className="vocab-eyebrow">MY VOCABULARY</p>
           <h1>{username}님의 단어장</h1>
         </div>
-        <button className="logout-button" type="button" onClick={onLogout}>
-          로그아웃
-        </button>
+        <div className="vocab-header-actions">
+          <button className="logout-button" type="button" onClick={onOpenMyPage}>
+            회원정보
+          </button>
+          <button className="logout-button" type="button" onClick={onLogout}>
+            로그아웃
+          </button>
+        </div>
       </header>
 
       <form className="vocab-create-form" onSubmit={handleAddVocab}>
