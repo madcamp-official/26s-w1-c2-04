@@ -15,9 +15,9 @@ Base.metadata.create_all(bind=engine)
 with engine.begin() as connection:
     columns = connection.execute(text("PRAGMA table_info(words)")).fetchall()
     column_names = {column[1] for column in columns}
-    if "example" not in column_names:
+    if "examples" not in column_names:
         connection.execute(
-            text("ALTER TABLE words ADD COLUMN example VARCHAR NOT NULL DEFAULT ''")
+            text("ALTER TABLE words ADD COLUMN examples VARCHAR NOT NULL DEFAULT ''")
         )
 #engine을 이용해서 생성된 모든 테이블을 DB에 저장
 
@@ -200,11 +200,7 @@ def create_word(
         vocab_id=vocabulary_id,
         word=word.word,
         meaning=word.meaning,
-<<<<<<< HEAD
-        examples = word.examples,
-=======
-        example=word.example,
->>>>>>> d2c572016940ff3d15a1b3cecece93620b04f52e
+        examples=word.examples,
     )
     db.add(db_word)
     db.commit()
@@ -231,11 +227,7 @@ def update_word(
 
     db_word.word = word_update.word
     db_word.meaning = word_update.meaning
-<<<<<<< HEAD
     db_word.examples = word_update.examples
-=======
-    db_word.example = word_update.example
->>>>>>> d2c572016940ff3d15a1b3cecece93620b04f52e
     db.commit()
     db.refresh(db_word)
     return db_word

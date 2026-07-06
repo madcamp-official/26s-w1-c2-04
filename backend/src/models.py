@@ -36,11 +36,7 @@ class Word(Base):
     # 기존 SQLite의 term 컬럼은 유지하면서 Python/API에서는 word로 사용합니다. - front와 term 동일시를 위한 변경
     word = Column("term", String, nullable=False)
     meaning = Column(String, nullable=False)
-<<<<<<< HEAD
-    examples = Column(String, nullable= True)
-=======
-    example = Column(String, nullable=False, default="")
->>>>>>> d2c572016940ff3d15a1b3cecece93620b04f52e
+    examples = Column(String, nullable=False, default="")
 
     #vocab를 구성하는 요소로 words가 사용된다는 의미
     vocab = relationship("Vocabulary", back_populates="words")
