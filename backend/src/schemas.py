@@ -6,7 +6,11 @@ from pydantic import BaseModel, ConfigDict, Field
 class WordCreate(BaseModel):
     word: str
     meaning: str
+<<<<<<< HEAD
+    examples: str
+=======
     example: str = ""
+>>>>>>> d2c572016940ff3d15a1b3cecece93620b04f52e
 
 
 class WordUpdate(WordCreate):

@@ -200,7 +200,11 @@ def create_word(
         vocab_id=vocabulary_id,
         word=word.word,
         meaning=word.meaning,
+<<<<<<< HEAD
+        examples = word.examples,
+=======
         example=word.example,
+>>>>>>> d2c572016940ff3d15a1b3cecece93620b04f52e
     )
     db.add(db_word)
     db.commit()
@@ -227,7 +231,11 @@ def update_word(
 
     db_word.word = word_update.word
     db_word.meaning = word_update.meaning
+<<<<<<< HEAD
+    db_word.examples = word_update.examples
+=======
     db_word.example = word_update.example
+>>>>>>> d2c572016940ff3d15a1b3cecece93620b04f52e
     db.commit()
     db.refresh(db_word)
     return db_word
