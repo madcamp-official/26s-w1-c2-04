@@ -1,7 +1,7 @@
 //API 연결해주는 파일 (통신 담당)
 //인증 추가하고 싶다면 이 파일 수정
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8000'
+  import.meta.env.VITE_API_URL ?? 'https://api.hwangshiwoo1.madcamp-kaist.org'
 
 //T는 타입을 저장하는 변수
 export async function apiRequest<T>(
