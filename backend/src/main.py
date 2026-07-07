@@ -28,15 +28,10 @@ app = FastAPI()
 #Front와의 연결을 위해 CORS허용
 app.add_middleware(
     CORSMiddleware,
-    #허용된 링크들
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "https://app.hwangshiwoo1.madcamp-kaist.org"
-    ],
-    allow_credentials=True, #로그인 기능 허용
-    allow_methods=["*"], #모든 기능 (CRUD) 허용
-    allow_headers=["*"], #모든 헤더 허용
+    allow_origin_regex=r"https://.*\.madcamp-kaist\.org",
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 #암호화된 비밀번호 객체 생성, bcrypt라는 알고리즘 사용, 예전 방식으로 암호화된 비밀번호 폐기
