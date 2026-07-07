@@ -33,6 +33,7 @@ app.add_middleware(
         "http://localhost:5173",
         "http://127.0.0.1:5173",
         "https://app.hwangshiwoo1.madcamp-kaist.org"
+        "https://bamtivocab.madcamp-kaist.org"
     ],
     allow_credentials=True, #로그인 기능 허용
     allow_methods=["*"], #모든 기능 (CRUD) 허용
