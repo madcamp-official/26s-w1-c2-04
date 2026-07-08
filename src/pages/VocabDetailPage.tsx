@@ -14,6 +14,7 @@ type VocabDetailPageProps = {
     examples: string,
   ) => Promise<void>
   onDeleteWords: (wordIds: number[]) => Promise<void>
+  onClearRequestError: () => void
 }
 
 function VocabDetailPage({
@@ -23,6 +24,7 @@ function VocabDetailPage({
   onAddWord,
   onUpdateWord,
   onDeleteWords,
+  onClearRequestError,
 }: VocabDetailPageProps) {
   const [word, setWord] = useState('')
   const [meaning, setMeaning] = useState('')
@@ -33,6 +35,11 @@ function VocabDetailPage({
   const [editingWordId, setEditingWordId] = useState<number | null>(null)
   const [selectedWordIds, setSelectedWordIds] = useState<number[]>([])
   const [isQuizOpen, setIsQuizOpen] = useState(false)
+
+  function clearErrors() {
+    setError('')
+    onClearRequestError()
+  }
 
   function resetForm() {
     setWord('')
@@ -45,6 +52,7 @@ function VocabDetailPage({
 
   async function handleSaveWord(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    clearErrors()
 
     const trimmedWord = word.trim()
     const trimmedMeaning = meaning.trim()
@@ -70,6 +78,7 @@ function VocabDetailPage({
   }
 
   function handleShowAddForm() {
+    onClearRequestError()
     setWord('')
     setMeaning('')
     setExamples('')
@@ -79,6 +88,8 @@ function VocabDetailPage({
   }
 
   function handleShowEditForm() {
+    clearErrors()
+
     if (selectedWordIds.length !== 1) {
       setError('수정할 단어를 하나만 선택해 주세요.')
       return
@@ -99,6 +110,8 @@ function VocabDetailPage({
   }
 
   async function handleDeleteSelected() {
+    clearErrors()
+
     if (selectedWordIds.length === 0) {
       setError('삭제할 단어를 선택해 주세요.')
       return
@@ -114,6 +127,8 @@ function VocabDetailPage({
   }
 
   function handleToggleWord(wordId: number) {
+    clearErrors()
+
     setSelectedWordIds((currentIds) =>
       currentIds.includes(wordId)
         ? currentIds.filter((id) => id !== wordId)
@@ -138,6 +153,7 @@ function VocabDetailPage({
         vocab={vocab}
         words={quizWords}
         onBack={() => setIsQuizOpen(false)}
+        onClearErrors={clearErrors}
       />
     )
   }
@@ -155,7 +171,10 @@ function VocabDetailPage({
         <div className="detail-header-actions">
           <button
             type="button"
-            onClick={() => setIsQuizOpen(true)}
+            onClick={() => {
+              clearErrors()
+              setIsQuizOpen(true)
+            }}
             disabled={vocab.words.length === 0}
           >
             퀴즈 치기
@@ -191,7 +210,10 @@ function VocabDetailPage({
           단어 검색
           <input
             value={search}
-            onChange={(event) => setSearch(event.target.value)}
+            onChange={(event) => {
+              setSearch(event.target.value)
+              clearErrors()
+            }}
             placeholder="단어나 뜻을 검색하세요"
           />
         </label>
@@ -206,7 +228,10 @@ function VocabDetailPage({
             단어
             <input
               value={word}
-              onChange={(event) => setWord(event.target.value)}
+              onChange={(event) => {
+                setWord(event.target.value)
+                clearErrors()
+              }}
               placeholder="예: apple"
             />
           </label>
@@ -214,7 +239,10 @@ function VocabDetailPage({
             뜻
             <input
               value={meaning}
-              onChange={(event) => setMeaning(event.target.value)}
+              onChange={(event) => {
+                setMeaning(event.target.value)
+                clearErrors()
+              }}
               placeholder="예: 사과"
             />
           </label>
@@ -222,7 +250,10 @@ function VocabDetailPage({
             예문
             <input
               value={examples}
-              onChange={(event) => setExamples(event.target.value)}
+              onChange={(event) => {
+                setExamples(event.target.value)
+                clearErrors()
+              }}
               placeholder="예: Apples are delicious"
             />
           </label>

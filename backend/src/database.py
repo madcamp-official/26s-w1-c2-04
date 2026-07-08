@@ -1,9 +1,12 @@
 #Sqlalchemy: sql database의 각 테이블과 프로그램의 클래스를 1:1 매칭해주는 역할
+from pathlib import Path
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 # SQLite를 사용할 경우의 설정 (파일 기반 DB)
-SQLALCHEMY_DATABASE_URL = "sqlite:///./wordnote.db"
+DB_PATH = Path(__file__).resolve().parents[2] / "wordnote.db"
+SQLALCHEMY_DATABASE_URL = f"sqlite:///{DB_PATH.as_posix()}"
 
 # 엔진 (실제로 DB와 소통하는 담당) 생성
 # 주어진 url 경로를 이용, check_same_thread로 sql_lite에서 금지된 중복 접속을 방지

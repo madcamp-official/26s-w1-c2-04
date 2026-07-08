@@ -28,6 +28,10 @@ app = FastAPI()
 #Front와의 연결을 위해 CORS허용
 app.add_middleware(
     CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
     allow_origin_regex=r"https://.*\.madcamp-kaist\.org",
     allow_credentials=True,
     allow_methods=["*"],
@@ -147,6 +151,13 @@ def read_vocabs(owner_id: int, db: Session = Depends(get_db)):
     status_code=status.HTTP_201_CREATED,
 )
 def create_vocab(vocab: schemas.VocabCreate, db: Session = Depends(get_db)):
+    title = vocab.title.strip()
+    if not title:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="단어장 이름을 입력해 주세요.",
+        )
+
     owner = (
         db.query(models.User)
         .filter(models.User.id == vocab.owner_id)
@@ -158,12 +169,35 @@ def create_vocab(vocab: schemas.VocabCreate, db: Session = Depends(get_db)):
             detail="사용자를 찾을 수 없습니다.",
         )
 
+    existing_vocab = (
+        db.query(models.Vocabulary)
+        .filter(
+            models.Vocabulary.owner_id == vocab.owner_id,
+            models.Vocabulary.title == title,
+        )
+        .first()
+    )
+    if existing_vocab:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="이미 존재하는 단어장 이름입니다.",
+        )
+
     db_vocab = models.Vocabulary(
-        title=vocab.title,
+        title=title,
         owner_id=vocab.owner_id,
     )
     db.add(db_vocab)
-    db.commit()
+
+    try:
+        db.commit() #진짜 저장
+    except IntegrityError: #중복아이디라면 에러 발송
+        db.rollback() #실패된 작업 취소
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="새로운 단어장 이름을 선택해주세요.",
+        )
+
     db.refresh(db_vocab)
     return db_vocab
 
@@ -208,6 +242,15 @@ def create_word(
     word: schemas.WordCreate,
     db: Session = Depends(get_db),
 ):
+    term = word.word.strip()
+    meaning = word.meaning.strip()
+    examples = word.examples.strip()
+    if not term or not meaning:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="단어와 뜻을 모두 입력해 주세요.",
+        )
+
     vocabulary = (
         db.query(models.Vocabulary)
         .filter(models.Vocabulary.id == vocabulary_id)
@@ -219,14 +262,37 @@ def create_word(
             detail="단어장을 찾을 수 없습니다.",
         )
 
+    existing_word = (
+        db.query(models.Word)
+        .filter(
+            models.Word.vocab_id == vocabulary_id,
+            models.Word.word == term,
+        )
+        .first()
+    )
+    if existing_word:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="이미 존재하는 단어입니다.",
+        )
+
     db_word = models.Word(
         vocab_id=vocabulary_id,
-        word=word.word,
-        meaning=word.meaning,
-        examples = word.examples,
+        word=term,
+        meaning=meaning,
+        examples=examples,
     )
     db.add(db_word)
-    db.commit()
+
+    try:
+        db.commit() 
+    except IntegrityError: 
+        db.rollback() 
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="이미 존재하는 단어입니다.",
+        )
+
     db.refresh(db_word)
     return db_word
 
