@@ -36,6 +36,10 @@ with engine.begin() as connection:
         connection.execute(
             text("ALTER TABLE vocabularies ADD COLUMN is_public BOOLEAN NOT NULL DEFAULT 0")
         )
+    if "share_count" not in vocab_column_names:
+        connection.execute(
+            text("ALTER TABLE vocabularies ADD COLUMN share_count INTEGER NOT NULL DEFAULT 0")
+        )
 #engine을 이용해서 생성된 모든 테이블을 DB에 저장
 
 app = FastAPI()
@@ -343,6 +347,7 @@ def copy_shared_vocab(
             )
         )
 
+    source_vocab.share_count += 1
     db.commit()
     db.refresh(copied_vocab)
     return copied_vocab

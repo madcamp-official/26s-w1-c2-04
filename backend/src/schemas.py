@@ -48,6 +48,7 @@ class Vocabulary(BaseModel):
     description: str = ""
     tags: str = ""
     is_public: bool = False
+    share_count: int = 0
     words: list[Word] = Field(default_factory=list)
 
 

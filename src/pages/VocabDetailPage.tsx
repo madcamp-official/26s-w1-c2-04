@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { Vocab } from '../types/vocabulary'
 import type { SortMode } from '../utils/sort'
-import { sortWords } from '../utils/sort'
+import { getShareCount, sortWords } from '../utils/sort'
 import QuizPage from './QuizPage'
 
 type VocabDetailPageProps = {
@@ -220,7 +220,9 @@ function VocabDetailPage({
           >
             태그
           </button>
-          <span className="word-count">{vocab.words.length}개 단어</span>
+          <span className="word-count">
+            {vocab.words.length}개 단어 · 공유 {getShareCount(vocab)}회
+          </span>
         </div>
       </header>
 

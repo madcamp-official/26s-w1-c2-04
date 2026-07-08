@@ -1,6 +1,7 @@
 import type { Vocab, WordEntry } from '../types/vocabulary'
 
 export type SortMode = 'latest' | 'en-ko' | 'ko-en'
+export type VocabSortMode = SortMode | 'share-count'
 
 type LeadingGroup = 'en' | 'ko' | 'other'
 
@@ -43,11 +44,21 @@ function compareText(a: string, b: string, mode: Exclude<SortMode, 'latest'>) {
   })
 }
 
-export function sortVocabs(vocabs: Vocab[], mode: SortMode) {
+export function getShareCount(vocab: Vocab) {
+  return vocab.share_count ?? 0
+}
+
+export function sortVocabs(vocabs: Vocab[], mode: VocabSortMode) {
   const copiedVocabs = [...vocabs]
 
   if (mode === 'latest') {
     return copiedVocabs.sort((a, b) => b.id - a.id)
+  }
+
+  if (mode === 'share-count') {
+    return copiedVocabs.sort(
+      (a, b) => getShareCount(b) - getShareCount(a) || b.id - a.id,
+    )
   }
 
   return copiedVocabs.sort(

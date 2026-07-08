@@ -11,8 +11,8 @@ import {
   updateWord,
 } from '../api/vocabularyApi'
 import type { Vocab } from '../types/vocabulary'
-import type { SortMode } from '../utils/sort'
-import { sortVocabs } from '../utils/sort'
+import type { VocabSortMode } from '../utils/sort'
+import { getShareCount, sortVocabs } from '../utils/sort'
 import VocabDetailPage from './VocabDetailPage'
 import CharacterIMG from '../assets/BamtiV3_withoutbg.png'
 
@@ -52,7 +52,7 @@ function VocabListPage({
   const [myPagePassword, setMyPagePassword] = useState('')
   const [myPagePasswordError, setMyPagePasswordError] = useState('')
   const [isCheckingPassword, setIsCheckingPassword] = useState(false)
-  const [sortMode, setSortMode] = useState<SortMode>('latest')
+  const [sortMode, setSortMode] = useState<VocabSortMode>('latest')
   const [nameSearch, setNameSearch] = useState('')
   const [tagSearch, setTagSearch] = useState('')
 
@@ -377,11 +377,12 @@ function VocabListPage({
           <select
             value={sortMode}
             onChange={(event) => {
-              setSortMode(event.target.value as SortMode)
+              setSortMode(event.target.value as VocabSortMode)
               clearErrors()
             }}
           >
             <option value="latest">최신순</option>
+            <option value="share-count">공유순</option>
             <option value="en-ko">영 - 한</option>
             <option value="ko-en">한 - 영</option>
           </select>
@@ -450,7 +451,7 @@ function VocabListPage({
                   </div>
                 )}
                 <p className="vocab-word-count">
-                  {vocab.words.length}개 단어
+                  {vocab.words.length}개 단어 · 공유 {getShareCount(vocab)}회
                 </p>
                 <div className="vocab-card-actions">
                   <button

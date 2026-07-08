@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { copySharedVocab, getSharedVocabs } from '../api/vocabularyApi'
 import type { Vocab } from '../types/vocabulary'
+import { getShareCount, sortVocabs } from '../utils/sort'
 
 type SharedVocabPageProps = {
   userId: number
@@ -51,6 +52,13 @@ function SharedVocabPage({ userId, onBack }: SharedVocabPageProps) {
     try {
       await copySharedVocab(vocabId, userId)
       setCopiedVocabIds((currentIds) => [...currentIds, vocabId])
+      setSharedVocabs((currentVocabs) =>
+        currentVocabs.map((vocab) =>
+          vocab.id === vocabId
+            ? { ...vocab, share_count: getShareCount(vocab) + 1 }
+            : vocab,
+        ),
+      )
     } catch (error) {
       setRequestError(getErrorMessage(error))
     }
@@ -68,6 +76,7 @@ function SharedVocabPage({ userId, onBack }: SharedVocabPageProps) {
 
     return matchesName && matchesTag
   })
+  const sortedVocabs = sortVocabs(filteredVocabs, 'share-count')
 
   return (
     <main className="vocab-page">
@@ -115,14 +124,14 @@ function SharedVocabPage({ userId, onBack }: SharedVocabPageProps) {
           <h2>아직 공유된 단어장이 없습니다</h2>
           <p>다른 사용자가 공개한 단어장이 여기에 표시됩니다.</p>
         </section>
-      ) : filteredVocabs.length === 0 ? (
+      ) : sortedVocabs.length === 0 ? (
         <section className="empty-vocab">
           <h2>검색 결과가 없습니다</h2>
           <p>다른 이름이나 태그로 검색해 보세요.</p>
         </section>
       ) : (
         <section className="vocab-grid">
-          {filteredVocabs.map((vocab) => {
+          {sortedVocabs.map((vocab) => {
             const isCopied = copiedVocabIds.includes(vocab.id)
             const tags = (vocab.tags ?? '')
               .split(',')
@@ -140,7 +149,7 @@ function SharedVocabPage({ userId, onBack }: SharedVocabPageProps) {
                   </div>
                 )}
                 <p className="vocab-word-count">
-                  {vocab.words.length}개 단어
+                  {vocab.words.length}개 단어 · 공유 {getShareCount(vocab)}회
                 </p>
                 <div className="vocab-card-actions">
                   <button

@@ -24,6 +24,7 @@ class Vocabulary(Base):
     description = Column(String, nullable=False, default="")
     tags = Column(String, nullable=False, default="")
     is_public = Column(Boolean, nullable=False, default=False)
+    share_count = Column(Integer, nullable=False, default=0)
 
     owner = relationship("User", back_populates="vocabs")
     words = relationship(

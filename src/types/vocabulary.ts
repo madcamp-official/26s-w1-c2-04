@@ -13,4 +13,5 @@ export type Vocab = {
   description: string
   tags: string
   is_public: boolean
+  share_count: number
 }
