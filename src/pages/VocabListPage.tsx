@@ -165,11 +165,11 @@ function VocabListPage({
         currentVocabs.map((vocab) =>
           vocab.id === vocabId
             ? {
-                ...vocab,
-                words: vocab.words.map((entry) =>
-                  entry.id === wordId ? updatedWord : entry,
-                ),
-              }
+              ...vocab,
+              words: vocab.words.map((entry) =>
+                entry.id === wordId ? updatedWord : entry,
+              ),
+            }
             : vocab,
         ),
       )
@@ -189,11 +189,11 @@ function VocabListPage({
         currentVocabs.map((vocab) =>
           vocab.id === vocabId
             ? {
-                ...vocab,
-                words: vocab.words.filter(
-                  (entry) => !wordIds.includes(entry.id),
-                ),
-              }
+              ...vocab,
+              words: vocab.words.filter(
+                (entry) => !wordIds.includes(entry.id),
+              ),
+            }
             : vocab,
         ),
       )
@@ -344,7 +344,7 @@ function VocabListPage({
               setIsPasswordModalOpen(true)
             }}
           >
-            회원정보
+            마이페이지
           </button>
           <button
             className="logout-button"

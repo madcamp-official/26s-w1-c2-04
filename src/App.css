@@ -926,6 +926,10 @@
 .mypage-card h1 {
   margin: 4px 0 24px;
   color: #0f172a;
+  font-size: 28px;
+  font-weight: 750;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
 }
 
 .mypage-form {
