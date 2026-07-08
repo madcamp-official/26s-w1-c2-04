@@ -12,8 +12,8 @@
 
 | 이름 | GitHub | 역할 |
 |---|---|---|
-| 이예지 | yeochi369 |  |
-| 황시우 | ssiuuuuuu |  |
+| 이예지 | yeochi369 | back 개발, front 수정 |
+| 황시우 | ssiuuuuuu | front 개발, back 수정, 배포 |
 
 ---
 
@@ -39,7 +39,7 @@
 ### 선택 기능
 
 - [단어 검색: 나의 단어장 내에서 단어 뜻 검색]
-- [공부 모드: 플래시카드 형태로 공부]
+- [퀴즈 모드: 플래시카드 형태로 단어장 내 단어들을 공부]
 
 ---
 
@@ -71,7 +71,7 @@ https://www.notion.so/IA-392e1fcea5b180b6ad5fd4a646694833?source=copy_link
 
 3. Word table
 - ID: Integer / Vocab_id: Integer / Term: String / Meaning: String
-- 단어와 단어 뜻, 그리고 어떤 단어장의 일부인지를 저장
+- 단어와 단어 뜻, 단어 예문, 그리고 어떤 단어장의 일부인지를 저장
 - 현재까지 가장 세부적 단계
 
 
@@ -86,14 +86,15 @@ https://www.notion.so/IA-392e1fcea5b180b6ad5fd4a646694833?source=copy_link
 | POST | /vocabs/ | 단어장 생성 | title | db_vocab 저장 |
 | GET | /vocabs/ | 단어장 조회 | 없음 | 단어장 title 조회 |
 | DELETE | /vocabs/{vocabulary_id} | 단어장 삭제 | word_id | 단어장 삭제 성공 |
-| POST | /words/ | 단어 생성 | term, meaning | db_word 저장 |
+| POST | /words/ | 단어 생성 | term, meaning, example | db_word 저장 |
 | GET | /words/ | 단어 조회 | 없음 | word (term, meaning) 조회 |
 | PUT | /words{word_id}/ | 단어 수정 | word_id | 단어 수정 성공 |
 | DELETE | /words{word_id}/ | 단어 삭제 | word_id | 단어 삭제 성공 |
 | POST | /users/ | 회원가입 | username, 비밀번호 | db_user 저장 |
 | POST | /login/ | 로그인 | username, 비밀번호 | 로그인 성공/실패 여부 |
 | POST | /logout/ | 로그아웃 | 로그인 시 받은 access token | 로그아웃 |
-
+| PUT | /users/{userId}/password/ | 비밀번호 변경 | user ID, 비밀번호 | 비밀번호 변경 여부 |
+| DELETE | /users/{userId}/ | 회원탈퇴 | user ID | 회원정보 삭제 |
 
 ---
 
@@ -101,11 +102,18 @@ https://www.notion.so/IA-392e1fcea5b180b6ad5fd4a646694833?source=copy_link
 
 > 접속 가능한 링크, 실행 방법, 주요 구현 내용
 
-- **서비스 URL:**
-- **실행 방법:**
+- **서비스 URL: https://bamtivocab.madcamp-kaist.org/**
+- **실행 방법: **
 
 ```bash
 # 실행 방법 작성
+1. 신규회원일 경우 회원가입을 한다.
+2. 회원정보로 로그인하면 나의 단어장들이 등장한다
+3. 상단에 새로운 단어장의 이름을 입력하여 단어장을 추가할 수 있으며, 각 단어장 하단에 있는 버튼으로 단어장에 들어가거나 단어장을 삭제할 수 있다. 
+4. 단어장에서는 단어를 추가, 수정, 삭제할 수 있다. 단어를 추가하기 위해서는 필수적으로 단어와 뜻이 요구되며 선택적으로 예문을 추가할 수 있다.
+5. 만들어둔 단어장에서는 단어를 검색하거나 단어 복습 퀴즈를 진행할 수 있다.
+6. 회원정보 및 비밀번호를 바꾸거나 회원탈퇴를 하고 싶다면 메인 페이지 우측 상단의 회원정보 버튼을 눌러서 진행할 수 있다. 
+
 ```
 
 ---
@@ -115,10 +123,16 @@ https://www.notion.so/IA-392e1fcea5b180b6ad5fd4a646694833?source=copy_link
 > 개발 과정에서의 어려움, 해결 방법, 역할 분담, 다음에 개선할 점 (KPT 방법론 참고)
 
 ### Keep
+- 먼저 간단한 틀을 만들고 MVP를 보완하면서 보완의 방향이 더 잘 보였던 것 같다.
+- 역할을 중간에 바꿈으로써 학습효과와 함께 기존 코드 보완의 장점도 커졌다.
 
 ### Problem
+- 초반에 프론트/백 변수명을 통일하지 않아 합치는 과정에서 어려움이 있었다.
+- AI의 도움을 받은 항목들을 검토하는데에 생각보다 오래 걸렸다.
 
 ### Try
+- 기획 단계에서 프론트와 백의 변수명을 통일되게 약속하고 개발을 시작하면 합칠 때 덜 힘들었을 것 같다.
+- 조금 더 많은 기능을 시도해보고 싶다.
 
 ---
 

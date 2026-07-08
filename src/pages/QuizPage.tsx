@@ -23,6 +23,7 @@ function QuizPage({ vocab, words, onBack, onClearErrors }: QuizPageProps) {
 
   const currentWord = words[currentIndex]
   const totalCount = words.length
+  const hasExample = Boolean(currentWord?.examples?.trim())
   const progress =
     totalCount === 0 ? 0 : Math.round(((currentIndex + 1) / totalCount) * 100)
   const accuracy =
@@ -118,7 +119,7 @@ function QuizPage({ vocab, words, onBack, onClearErrors }: QuizPageProps) {
         <h2>{currentWord.word}</h2>
         {showHint && (
           <div className="flashcard-hint">
-            {currentWord.examples || '등록된 예문이 없습니다.'}
+            {hasExample ? currentWord.examples : '등록된 예문이 없습니다.'}
           </div>
         )}
       </section>
@@ -140,7 +141,6 @@ function QuizPage({ vocab, words, onBack, onClearErrors }: QuizPageProps) {
             className="hint-button"
             type="button"
             onClick={() => setShowHint(true)}
-            disabled={!currentWord.examples}
           >
             예문 힌트
           </button>
