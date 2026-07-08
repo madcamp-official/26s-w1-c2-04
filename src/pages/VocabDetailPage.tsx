@@ -8,7 +8,7 @@ type VocabDetailPageProps = {
   vocab: Vocab
   requestError: string
   onBack: () => void
-  onUpdateDescription: (description: string) => Promise<void>
+  onUpdateTags: (tags: string) => Promise<void>
   onAddWord: (word: string, meaning: string, examples: string) => Promise<void>
   onUpdateWord: (
     wordId: number,
@@ -24,7 +24,7 @@ function VocabDetailPage({
   vocab,
   requestError,
   onBack,
-  onUpdateDescription,
+  onUpdateTags,
   onAddWord,
   onUpdateWord,
   onDeleteWords,
@@ -40,8 +40,8 @@ function VocabDetailPage({
   const [selectedWordIds, setSelectedWordIds] = useState<number[]>([])
   const [isQuizOpen, setIsQuizOpen] = useState(false)
   const [sortMode, setSortMode] = useState<SortMode>('latest')
-  const [descriptionDraft, setDescriptionDraft] = useState(vocab.description)
-  const [isEditingDescription, setIsEditingDescription] = useState(false)
+  const [tagsDraft, setTagsDraft] = useState(vocab.tags ?? '')
+  const [isEditingTags, setIsEditingTags] = useState(false)
 
   function clearErrors() {
     setError('')
@@ -57,21 +57,21 @@ function VocabDetailPage({
     setEditingWordId(null)
   }
 
-  async function handleSaveDescription() {
+  async function handleSaveTags() {
     clearErrors()
 
     try {
-      await onUpdateDescription(descriptionDraft)
-      setIsEditingDescription(false)
+      await onUpdateTags(tagsDraft)
+      setIsEditingTags(false)
     } catch {
       // 부모 컴포넌트에서 요청 에러를 표시합니다.
     }
   }
 
-  function handleCancelDescriptionEdit() {
+  function handleCancelTagsEdit() {
     clearErrors()
-    setDescriptionDraft(vocab.description)
-    setIsEditingDescription(false)
+    setTagsDraft(vocab.tags ?? '')
+    setIsEditingTags(false)
   }
 
   async function handleSaveWord(event: React.FormEvent<HTMLFormElement>) {
@@ -208,11 +208,11 @@ function VocabDetailPage({
             type="button"
             onClick={() => {
               clearErrors()
-              setDescriptionDraft(vocab.description)
-              setIsEditingDescription(true)
+              setTagsDraft(vocab.tags ?? '')
+              setIsEditingTags(true)
             }}
           >
-            단어장 소개하기
+            태그
           </button>
           <span className="word-count">{vocab.words.length}개 단어</span>
         </div>
@@ -231,31 +231,33 @@ function VocabDetailPage({
           />
         </label>
       </section>
-      {isEditingDescription && (
+      {isEditingTags && (
         <div className="vocab-description-modal-backdrop">
           <section className="vocab-description-modal" aria-modal="true">
             <div className="vocab-description-header">
-              <h2>단어장 소개</h2>
+              <h2>태그</h2>
             </div>
             <div className="vocab-description-editor">
-              <textarea
-                value={descriptionDraft}
-                onChange={(event) => {
-                  setDescriptionDraft(event.target.value)
-                  clearErrors()
-                }}
-                placeholder="이 단어장을 어떻게 쓰는지 적어보세요"
-                rows={5}
-                autoFocus
-              />
+              <label className="vocab-tags-field">
+                태그
+                <input
+                  value={tagsDraft}
+                  onChange={(event) => {
+                    setTagsDraft(event.target.value)
+                    clearErrors()
+                  }}
+                  placeholder="예: 토익, 중급, 여행"
+                  autoFocus
+                />
+              </label>
               <div className="vocab-description-actions">
-                <button type="button" onClick={handleSaveDescription}>
+                <button type="button" onClick={handleSaveTags}>
                   저장
                 </button>
                 <button
                   className="secondary-button"
                   type="button"
-                  onClick={handleCancelDescriptionEdit}
+                  onClick={handleCancelTagsEdit}
                 >
                   취소
                 </button>

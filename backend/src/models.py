@@ -1,6 +1,6 @@
 #DB 스키마를 정의하는 코드
 from .database import Base
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Boolean, Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 
 class User(Base):
@@ -22,6 +22,8 @@ class Vocabulary(Base):
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=False) #다른 객체(users)의 id를 참고해서 owner id 작성
     title = Column(String, nullable=False)
     description = Column(String, nullable=False, default="")
+    tags = Column(String, nullable=False, default="")
+    is_public = Column(Boolean, nullable=False, default=False)
 
     owner = relationship("User", back_populates="vocabs")
     words = relationship(
@@ -37,7 +39,8 @@ class Word(Base):
     # 기존 SQLite의 term 컬럼은 유지하면서 Python/API에서는 word로 사용합니다. - front와 term 동일시를 위한 변경
     word = Column("term", String, nullable=False)
     meaning = Column(String, nullable=False)
-    examples = Column(String, nullable=False, default="")
+    examples = Column(String, nullable=True, default="")
+    
 
     #vocab를 구성하는 요소로 words가 사용된다는 의미
     vocab = relationship("Vocabulary", back_populates="words")

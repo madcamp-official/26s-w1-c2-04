@@ -7,6 +7,7 @@ import {
   deleteWord,
   getVocabs,
   updateVocabDescription,
+  updateVocabPublic,
   updateWord,
 } from '../api/vocabularyApi'
 import type { Vocab } from '../types/vocabulary'
@@ -20,6 +21,19 @@ type VocabListPageProps = {
   username: string
   onLogout: () => void
   onOpenMyPage: () => void
+  onOpenSharedPage: () => void
+}
+
+function Characters() {
+  return (
+    <div>
+      <img
+        src={CharacterIMG}
+        alt="캐릭터"
+        style={{ width: '60px', height: 'auto' }}
+      />
+    </div>
+  )
 }
 
 function VocabListPage({
@@ -27,6 +41,7 @@ function VocabListPage({
   username,
   onLogout,
   onOpenMyPage,
+  onOpenSharedPage,
 }: VocabListPageProps) {
   const [vocabTitle, setVocabTitle] = useState('')
   const [vocabs, setVocabs] = useState<Vocab[]>([])
@@ -38,6 +53,8 @@ function VocabListPage({
   const [myPagePasswordError, setMyPagePasswordError] = useState('')
   const [isCheckingPassword, setIsCheckingPassword] = useState(false)
   const [sortMode, setSortMode] = useState<SortMode>('latest')
+  const [nameSearch, setNameSearch] = useState('')
+  const [tagSearch, setTagSearch] = useState('')
 
   useEffect(() => {
     let isCancelled = false
@@ -183,14 +200,18 @@ function VocabListPage({
     }
   }
 
-  async function handleUpdateVocabDescription(
+  async function handleUpdateVocabTags(
     vocabId: number,
-    description: string,
+    tags: string,
   ) {
     clearErrors()
 
     try {
-      const updatedVocab = await updateVocabDescription(vocabId, description)
+      const updatedVocab = await updateVocabDescription(
+        vocabId,
+        '',
+        tags,
+      )
       setVocabs((currentVocabs) =>
         currentVocabs.map((vocab) =>
           vocab.id === vocabId ? updatedVocab : vocab,
@@ -200,6 +221,22 @@ function VocabListPage({
     } catch (error) {
       setRequestError(getErrorMessage(error))
       throw error
+    }
+  }
+
+  async function handleUpdateVocabPublic(vocabId: number, isPublic: boolean) {
+    clearErrors()
+
+    try {
+      const updatedVocab = await updateVocabPublic(vocabId, isPublic)
+      setVocabs((currentVocabs) =>
+        currentVocabs.map((vocab) =>
+          vocab.id === vocabId ? updatedVocab : vocab,
+        ),
+      )
+      setRequestError('')
+    } catch (error) {
+      setRequestError(getErrorMessage(error))
     }
   }
 
@@ -234,7 +271,19 @@ function VocabListPage({
   }
 
   const selectedVocab = vocabs.find((vocab) => vocab.id === selectedVocabId)
-  const sortedVocabs = sortVocabs(vocabs, sortMode)
+  const normalizedNameSearch = nameSearch.trim().toLowerCase()
+  const normalizedTagSearch = tagSearch.trim().toLowerCase()
+  const filteredVocabs = vocabs.filter((vocab) => {
+    const matchesName =
+      !normalizedNameSearch ||
+      vocab.title.toLowerCase().includes(normalizedNameSearch)
+    const matchesTag =
+      !normalizedTagSearch ||
+      (vocab.tags ?? '').toLowerCase().includes(normalizedTagSearch)
+
+    return matchesName && matchesTag
+  })
+  const sortedVocabs = sortVocabs(filteredVocabs, sortMode)
 
   if (selectedVocab) {
     return (
@@ -254,25 +303,13 @@ function VocabListPage({
         onDeleteWords={(wordIds) =>
           handleDeleteWords(selectedVocab.id, wordIds)
         }
-        onUpdateDescription={(description) =>
-          handleUpdateVocabDescription(selectedVocab.id, description)
+        onUpdateTags={(tags) =>
+          handleUpdateVocabTags(selectedVocab.id, tags)
         }
         onClearRequestError={clearErrors}
       />
     )
   }
-
-  function Characters(){
-    return(
-      <div>
-        <img src={CharacterIMG}
-        alt="캐릭터"
-        style={{ width: '60px', height: 'auto' }}
-        />
-      </div>
-    )
-  }
-
 
   return (
     <main className="vocab-page">
@@ -285,6 +322,16 @@ function VocabListPage({
           </div>
         </div>
         <div className="vocab-header-actions">
+          <button
+            className="logout-button"
+            type="button"
+            onClick={() => {
+              clearErrors()
+              onOpenSharedPage()
+            }}
+          >
+            공유 단어장
+          </button>
           <button
             className="logout-button"
             type="button"
@@ -339,6 +386,33 @@ function VocabListPage({
 
       {requestError && <p className="api-error">{requestError}</p>}
 
+      {!isLoading && vocabs.length > 0 && (
+        <section className="shared-search-controls">
+          <label>
+            이름으로 검색
+            <input
+              value={nameSearch}
+              onChange={(event) => {
+                setNameSearch(event.target.value)
+                clearErrors()
+              }}
+              placeholder="단어장 이름"
+            />
+          </label>
+          <label>
+            태그로 검색
+            <input
+              value={tagSearch}
+              onChange={(event) => {
+                setTagSearch(event.target.value)
+                clearErrors()
+              }}
+              placeholder="예: 토익, 중급"
+            />
+          </label>
+        </section>
+      )}
+
       {isLoading ? (
         <section className="empty-vocab">
           <h2>단어장을 불러오는 중입니다</h2>
@@ -348,39 +422,66 @@ function VocabListPage({
           <h2>아직 단어장이 없습니다</h2>
           <p>위 입력창에서 첫 번째 단어장을 만들어 보세요.</p>
         </section>
+      ) : sortedVocabs.length === 0 ? (
+        <section className="empty-vocab">
+          <h2>검색 결과가 없습니다</h2>
+          <p>다른 이름이나 태그로 검색해 보세요.</p>
+        </section>
       ) : (
         <section className="vocab-grid">
-          {sortedVocabs.map((vocab) => (
-            <article className="vocab-card" key={vocab.id}>
-              <h2>{vocab.title}</h2>
-              {vocab.description}
-              <p className="vocab-word-count">
-                {vocab.words.length}개 단어
-              </p>
-              <div className="vocab-card-actions">
-                <button
-                  className="open-vocab-button"
-                  type="button"
-                  onClick={() => {
-                    clearErrors()
-                    setSelectedVocabId(vocab.id)
-                  }}
-                >
-                  열기
-                </button>
-                <button
-                  className="delete-button"
-                  type="button"
-                  onClick={() => {
-                    clearErrors()
-                    handleDeleteVocab(vocab.id)
-                  }}
-                >
-                  삭제
-                </button>
-              </div>
-            </article>
-          ))}
+          {sortedVocabs.map((vocab) => {
+            const tags = (vocab.tags ?? '')
+              .split(',')
+              .map((tag) => tag.trim())
+              .filter(Boolean)
+
+            return (
+              <article className="vocab-card" key={vocab.id}>
+                <h2>{vocab.title}</h2>
+                {tags.length > 0 && (
+                  <div className="vocab-tags">
+                    {tags.map((tag) => (
+                      <span key={tag}>{tag}</span>
+                    ))}
+                  </div>
+                )}
+                <p className="vocab-word-count">
+                  {vocab.words.length}개 단어
+                </p>
+                <div className="vocab-card-actions">
+                  <button
+                    className="open-vocab-button"
+                    type="button"
+                    onClick={() =>
+                      handleUpdateVocabPublic(vocab.id, !vocab.is_public)
+                    }
+                  >
+                    {vocab.is_public ? '공유 중' : '비공개'}
+                  </button>
+                  <button
+                    className="open-vocab-button"
+                    type="button"
+                    onClick={() => {
+                      clearErrors()
+                      setSelectedVocabId(vocab.id)
+                    }}
+                  >
+                    열기
+                  </button>
+                  <button
+                    className="delete-button"
+                    type="button"
+                    onClick={() => {
+                      clearErrors()
+                      handleDeleteVocab(vocab.id)
+                    }}
+                  >
+                    삭제
+                  </button>
+                </div>
+              </article>
+            )
+          })}
         </section>
       )}
 

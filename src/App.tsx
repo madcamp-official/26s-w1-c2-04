@@ -1,9 +1,21 @@
 import { useState } from 'react'
 import VocabListPage from './pages/VocabListPage'
 import MyPage from './pages/MyPage'
+import SharedVocabPage from './pages/SharedVocabPage'
 import { login, logout, signup } from './api/authApi'
-import CharacterIMG from '../public/TheRealBamti.png'
 import './App.css'
+
+function Characters() {
+  return (
+    <div>
+      <img
+        src="/TheRealBamti.png"
+        alt="캐릭터"
+        style={{ width: '60px', height: 'auto' }}
+      />
+    </div>
+  )
+}
 
 function App() {
   const [username, setUsername] = useState('')
@@ -11,7 +23,9 @@ function App() {
   const [passwordConfirm, setPasswordConfirm] = useState('')
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login')
   const [userId, setUserId] = useState<number | null>(null)
-  const [currentPage, setCurrentPage] = useState<'vocab' | 'mypage'>('vocab')
+  const [currentPage, setCurrentPage] = useState<
+    'vocab' | 'mypage' | 'shared'
+  >('vocab')
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -89,27 +103,25 @@ function App() {
       )
     }
 
+    if (currentPage === 'shared') {
+      return (
+        <SharedVocabPage
+          userId={userId}
+          onBack={() => setCurrentPage('vocab')}
+        />
+      )
+    }
+
     return (
       <VocabListPage
         userId={userId}
         username={username}
         onLogout={handleLogout}
         onOpenMyPage={() => setCurrentPage('mypage')}
+        onOpenSharedPage={() => setCurrentPage('shared')}
       />
     )
   }
-
-  function Characters() {
-    return (
-      <div>
-        <img src={CharacterIMG}
-          alt="캐릭터"
-          style={{ width: '60px', height: 'auto' }}
-        />
-      </div>
-    )
-  }
-
 
   return (
     <main className="login-page">
@@ -117,8 +129,6 @@ function App() {
         <Characters />
         <h1>The Bamti</h1>
         <h1>Vocabulary</h1>
-        <h1>
-        </h1>
 
         <div className="auth-tabs" role="tablist" aria-label="인증 방식">
           <button

@@ -7,7 +7,10 @@ export type WordEntry = {
 
 export type Vocab = {
   id: number
+  owner_id: number
   title: string
   words: WordEntry[]
   description: string
+  tags: string
+  is_public: boolean
 }
