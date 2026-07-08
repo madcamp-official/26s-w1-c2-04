@@ -690,7 +690,7 @@
   max-width: 960px;
   margin: 0 auto 24px;
   box-sizing: border-box;
-  grid-template-columns: 1fr 1fr auto auto;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
 }
 
 .word-create-form label,
@@ -724,7 +724,8 @@
   outline: 3px solid rgba(15, 23, 42, 0.12);
 }
 
-.word-create-form > button {
+.word-create-form > button,
+.word-form-actions button {
   padding: 11px 16px;
   border: none;
   border-radius: 8px;
@@ -735,17 +736,23 @@
   cursor: pointer;
 }
 
-.word-create-form > button:hover {
+.word-create-form > button:hover,
+.word-form-actions button:hover {
   background: #1e293b;
 }
 
-.word-create-form > .cancel-form-button {
+.word-form-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.word-form-actions .cancel-form-button {
   border: 1px solid #cbd5e1;
   background: white;
   color: #475569;
 }
 
-.word-create-form > .cancel-form-button:hover {
+.word-form-actions .cancel-form-button:hover {
   background: #f1f5f9;
 }
 
@@ -1272,6 +1279,14 @@
 
   .word-create-form > button {
     width: 100%;
+  }
+
+  .word-form-actions {
+    width: 100%;
+  }
+
+  .word-form-actions button {
+    flex: 1;
   }
 
   .word-item > div {

@@ -59,6 +59,12 @@ function MyPage({ userId, username, onBack, onDeleted }: MyPageProps) {
     setMessage('')
     setError('')
 
+    const shouldDelete = window.confirm(
+      '회원 탈퇴를 진행할까요? 계정 정보가 삭제됩니다.',
+    )
+
+    if (!shouldDelete) return
+
     setIsSubmitting(true)
 
     try {

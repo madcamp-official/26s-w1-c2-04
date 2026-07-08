@@ -141,6 +141,12 @@ function VocabDetailPage({
       return
     }
 
+    const shouldDelete = window.confirm(
+      `선택한 단어 ${selectedWordIds.length}개를 삭제할까요?`,
+    )
+
+    if (!shouldDelete) return
+
     try {
       await onDeleteWords(selectedWordIds)
       setSelectedWordIds([])
@@ -276,7 +282,7 @@ function VocabDetailPage({
             onClick={handleShowEditForm}
             disabled={vocab.words.length === 0}
           >
-            선택 수정
+            단어 수정
           </button>
           <button
             className="selected-delete-button"
@@ -284,7 +290,7 @@ function VocabDetailPage({
             onClick={handleDeleteSelected}
             disabled={vocab.words.length === 0}
           >
-            선택 삭제
+            단어 삭제
           </button>
           <span>{selectedWordIds.length}개 선택</span>
         </div>
@@ -344,12 +350,18 @@ function VocabDetailPage({
               placeholder="예: Apples are delicious"
             />
           </label>
-          <button type="submit">
-            {formMode === 'edit' ? '수정 저장' : '추가 완료'}
-          </button>
-          <button className="cancel-form-button" type="button" onClick={resetForm}>
-            취소
-          </button>
+          <div className="word-form-actions">
+            <button type="submit">
+              {formMode === 'edit' ? '수정 저장' : '추가 완료'}
+            </button>
+            <button
+              className="cancel-form-button"
+              type="button"
+              onClick={resetForm}
+            >
+              취소
+            </button>
+          </div>
           {error && <p className="word-form-error">{error}</p>}
         </form>
       )}
@@ -381,11 +393,11 @@ function VocabDetailPage({
                 <strong>{entry.word}</strong>
 
                 <p>{entry.meaning}</p>
-              
-              {entry.examples && (
-                <span>Ex. {entry.examples}</span>
-              
-              )}
+
+                {entry.examples && (
+                  <span>Ex. {entry.examples}</span>
+
+                )}
               </div>
             </li>
           ))}

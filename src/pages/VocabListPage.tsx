@@ -111,6 +111,10 @@ function VocabListPage({
   async function handleDeleteVocab(id: number) {
     clearErrors()
 
+    const shouldDelete = window.confirm('이 단어장을 삭제할까요?')
+
+    if (!shouldDelete) return
+
     try {
       await deleteVocab(id)
       setVocabs((currentVocabs) =>
