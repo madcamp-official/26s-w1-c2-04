@@ -116,7 +116,7 @@ function App() {
       <section className="login-card">
         <Characters />
         <h1>The Bamti</h1>
-        <h1>Word Book</h1>
+        <h1>Vocabulary</h1>
         <h1>
         </h1>
 

@@ -377,10 +377,13 @@ function VocabDetailPage({
               />
               <div>
                 <strong>{entry.word}</strong>
-                <span>{entry.meaning}</span>
-                {(entry.examples ?? entry.examples) && (
-                  <span>{entry.examples ?? entry.examples}</span>
-                )}
+
+                <p>{entry.meaning}</p>
+              
+              {entry.examples && (
+                <span>Ex. {entry.examples}</span>
+              
+              )}
               </div>
             </li>
           ))}
