@@ -8,6 +8,7 @@ type VocabDetailPageProps = {
   vocab: Vocab
   requestError: string
   onBack: () => void
+  onUpdateDescription: (description: string) => Promise<void>
   onAddWord: (word: string, meaning: string, examples: string) => Promise<void>
   onUpdateWord: (
     wordId: number,
@@ -23,6 +24,7 @@ function VocabDetailPage({
   vocab,
   requestError,
   onBack,
+  onUpdateDescription,
   onAddWord,
   onUpdateWord,
   onDeleteWords,
@@ -38,6 +40,8 @@ function VocabDetailPage({
   const [selectedWordIds, setSelectedWordIds] = useState<number[]>([])
   const [isQuizOpen, setIsQuizOpen] = useState(false)
   const [sortMode, setSortMode] = useState<SortMode>('latest')
+  const [descriptionDraft, setDescriptionDraft] = useState(vocab.description)
+  const [isEditingDescription, setIsEditingDescription] = useState(false)
 
   function clearErrors() {
     setError('')
@@ -51,6 +55,23 @@ function VocabDetailPage({
     setError('')
     setFormMode(null)
     setEditingWordId(null)
+  }
+
+  async function handleSaveDescription() {
+    clearErrors()
+
+    try {
+      await onUpdateDescription(descriptionDraft)
+      setIsEditingDescription(false)
+    } catch {
+      // 부모 컴포넌트에서 요청 에러를 표시합니다.
+    }
+  }
+
+  function handleCancelDescriptionEdit() {
+    clearErrors()
+    setDescriptionDraft(vocab.description)
+    setIsEditingDescription(false)
   }
 
   async function handleSaveWord(event: React.FormEvent<HTMLFormElement>) {
@@ -199,6 +220,50 @@ function VocabDetailPage({
             placeholder="단어나 뜻을 검색하세요"
           />
         </label>
+      </section>
+      <section className="vocab-description">
+        <div className="vocab-description-header">
+          <h2>단어장 소개</h2>
+        </div>
+        {isEditingDescription ? (
+          <div className="vocab-description-editor">
+            <textarea
+              value={descriptionDraft}
+              onChange={(event) => {
+                setDescriptionDraft(event.target.value)
+                clearErrors()
+              }}
+              placeholder="이 단어장을 어떻게 쓰는지 적어보세요"
+              rows={4}
+            />
+            <div className="vocab-description-actions">
+              <button type="button" onClick={handleSaveDescription}>
+                저장
+              </button>
+              <button
+                className="secondary-button"
+                type="button"
+                onClick={handleCancelDescriptionEdit}
+              >
+                취소
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="vocab-description-view">
+            <p>{vocab.description || '아직 소개가 없습니다.'}</p>
+            <button
+              type="button"
+              onClick={() => {
+                clearErrors()
+                setDescriptionDraft(vocab.description)
+                setIsEditingDescription(true)
+              }}
+            >
+              소개 수정하기
+            </button>
+          </div>
+        )}
       </section>
       <section className="detail-controls">
         <div className="detail-actions">

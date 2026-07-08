@@ -6,6 +6,7 @@ import {
   deleteVocab,
   deleteWord,
   getVocabs,
+  updateVocabDescription,
   updateWord,
 } from '../api/vocabularyApi'
 import type { Vocab } from '../types/vocabulary'
@@ -182,6 +183,26 @@ function VocabListPage({
     }
   }
 
+  async function handleUpdateVocabDescription(
+    vocabId: number,
+    description: string,
+  ) {
+    clearErrors()
+
+    try {
+      const updatedVocab = await updateVocabDescription(vocabId, description)
+      setVocabs((currentVocabs) =>
+        currentVocabs.map((vocab) =>
+          vocab.id === vocabId ? updatedVocab : vocab,
+        ),
+      )
+      setRequestError('')
+    } catch (error) {
+      setRequestError(getErrorMessage(error))
+      throw error
+    }
+  }
+
   async function handleOpenMyPage(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     clearErrors()
@@ -232,6 +253,9 @@ function VocabListPage({
         }
         onDeleteWords={(wordIds) =>
           handleDeleteWords(selectedVocab.id, wordIds)
+        }
+        onUpdateDescription={(description) =>
+          handleUpdateVocabDescription(selectedVocab.id, description)
         }
         onClearRequestError={clearErrors}
       />
@@ -329,6 +353,7 @@ function VocabListPage({
           {sortedVocabs.map((vocab) => (
             <article className="vocab-card" key={vocab.id}>
               <h2>{vocab.title}</h2>
+              {vocab.description}
               <p className="vocab-word-count">
                 {vocab.words.length}개 단어
               </p>

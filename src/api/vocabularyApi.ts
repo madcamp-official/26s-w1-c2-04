@@ -22,6 +22,13 @@ export function deleteVocab(vocabId: number) {
   })
 }
 
+export function updateVocabDescription(vocabId: number, description: string) {
+  return apiRequest<Vocab>(`/vocabs/${vocabId}/description/`, {
+    method: 'PUT',
+    body: JSON.stringify({ description }),
+  })
+}
+
 export function createWord(
   vocabId: number,
   word: string,

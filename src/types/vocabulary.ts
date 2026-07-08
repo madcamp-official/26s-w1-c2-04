@@ -9,4 +9,5 @@ export type Vocab = {
   id: number
   title: string
   words: WordEntry[]
+  description: string
 }

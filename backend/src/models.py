@@ -21,6 +21,7 @@ class Vocabulary(Base):
     id = Column(Integer, primary_key=True, index=True) #얘도 고유키
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=False) #다른 객체(users)의 id를 참고해서 owner id 작성
     title = Column(String, nullable=False)
+    description = Column(String, nullable=False, default="")
 
     owner = relationship("User", back_populates="vocabs")
     words = relationship(

@@ -19,6 +19,15 @@ with engine.begin() as connection:
         connection.execute(
             text("ALTER TABLE words ADD COLUMN examples VARCHAR NOT NULL DEFAULT ''")
         )
+
+    vocab_columns = connection.execute(
+        text("PRAGMA table_info(vocabularies)")
+    ).fetchall()
+    vocab_column_names = {column[1] for column in vocab_columns}
+    if "description" not in vocab_column_names:
+        connection.execute(
+            text("ALTER TABLE vocabularies ADD COLUMN description VARCHAR NOT NULL DEFAULT ''")
+        )
 #engine을 이용해서 생성된 모든 테이블을 DB에 저장
 
 app = FastAPI()
@@ -200,6 +209,29 @@ def create_vocab(vocab: schemas.VocabCreate, db: Session = Depends(get_db)):
 
     db.refresh(db_vocab)
     return db_vocab
+
+
+@app.put("/vocabs/{vocabulary_id}/description/", response_model=schemas.Vocabulary)
+def update_vocab_description(
+    vocabulary_id: int,
+    description_update: schemas.VocabDescriptionUpdate,
+    db: Session = Depends(get_db),
+):
+    vocabulary = (
+        db.query(models.Vocabulary)
+        .filter(models.Vocabulary.id == vocabulary_id)
+        .first()
+    )
+    if not vocabulary:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="수정할 단어장을 찾을 수 없습니다.",
+        )
+
+    vocabulary.description = description_update.description.strip()
+    db.commit()
+    db.refresh(vocabulary)
+    return vocabulary
 
 
 @app.delete("/vocabs/{vocabulary_id}")

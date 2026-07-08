@@ -397,6 +397,7 @@
 
 .detail-header,
 .detail-controls,
+.vocab-description,
 .word-list,
 .empty-words {
   width: 100%;
@@ -458,6 +459,83 @@
 
 .detail-search-row .word-search {
   grid-column: 1 / -1;
+}
+
+.vocab-description {
+  max-width: 960px;
+  margin: 0 auto 24px;
+  padding: 20px;
+  box-sizing: border-box;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: white;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
+}
+
+.vocab-description-header h2 {
+  margin: 0 0 12px;
+  color: #172554;
+  font-size: 18px;
+}
+
+.vocab-description-view {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.vocab-description-view p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.vocab-description-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.vocab-description-editor textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px 14px;
+  box-sizing: border-box;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  resize: vertical;
+  background: white;
+  color: #0f172a;
+  font: inherit;
+}
+
+.vocab-description-editor textarea:focus {
+  border-color: #2563eb;
+  outline: 3px solid rgba(37, 99, 235, 0.15);
+}
+
+.vocab-description-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.vocab-description-view button,
+.vocab-description-actions button {
+  width: fit-content;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.vocab-description-actions .secondary-button {
+  border: 1px solid #cbd5e1;
+  background: white;
+  color: #475569;
 }
 
 .detail-filters {

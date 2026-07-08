@@ -26,12 +26,17 @@ class VocabCreate(BaseModel):
     owner_id: int
 
 
+class VocabDescriptionUpdate(BaseModel):
+    description: str = ""
+
+
 class Vocabulary(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
     title: str
     owner_id: int
+    description: str = ""
     words: list[Word] = Field(default_factory=list)
 
 
