@@ -2,7 +2,7 @@ import { useState } from 'react'
 import VocabListPage from './pages/VocabListPage'
 import MyPage from './pages/MyPage'
 import { login, logout, signup } from './api/authApi'
-import CharacterIMG from '../public/BamtiV_icon_3rd.png'
+import CharacterIMG from '../public/TheRealBamti.png'
 import './App.css'
 
 function App() {
