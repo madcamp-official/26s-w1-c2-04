@@ -129,6 +129,7 @@ function App() {
         <Characters />
         <h1>The Bamti</h1>
         <h1>Vocabulary</h1>
+        <h1> </h1>
 
         <div className="auth-tabs" role="tablist" aria-label="인증 방식">
           <button
