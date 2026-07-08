@@ -88,7 +88,7 @@ function App() {
         />
       )
     }
-    
+
     return (
       <VocabListPage
         userId={userId}
@@ -99,25 +99,26 @@ function App() {
     )
   }
 
-  function Characters(){
-    return(
+  function Characters() {
+    return (
       <div>
         <img src={CharacterIMG}
-        alt="캐릭터"
-        style={{ width: '60px', height: 'auto' }}
+          alt="캐릭터"
+          style={{ width: '60px', height: 'auto' }}
         />
       </div>
     )
   }
 
-  
+
   return (
     <main className="login-page">
       <section className="login-card">
         <Characters />
         <h1>The Bamti</h1>
         <h1>Word Book</h1>
-        <p>나만의 영어 단어장을 만들어 보세요.</p>
+        <h1>
+        </h1>
 
         <div className="auth-tabs" role="tablist" aria-label="인증 방식">
           <button

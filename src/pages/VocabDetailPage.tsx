@@ -214,6 +214,7 @@ function VocabDetailPage({
           >
             단어장 소개하기
           </button>
+          <span className="word-count">{vocab.words.length}개 단어</span>
         </div>
       </header>
 
@@ -230,14 +231,6 @@ function VocabDetailPage({
           />
         </label>
       </section>
-      {vocab.description && (
-        <section className="vocab-description">
-          <div className="vocab-description-view">
-            <p>{vocab.description}</p>
-          </div>
-        </section>
-      )}
-
       {isEditingDescription && (
         <div className="vocab-description-modal-backdrop">
           <section className="vocab-description-modal" aria-modal="true">
