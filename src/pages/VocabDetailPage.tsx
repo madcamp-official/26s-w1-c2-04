@@ -195,6 +195,7 @@ function VocabDetailPage({
         </div>
         <div className="detail-header-actions">
           <button
+            className="quiz-open-button"
             type="button"
             onClick={() => {
               clearErrors()
@@ -260,7 +261,7 @@ function VocabDetailPage({
                 setIsEditingDescription(true)
               }}
             >
-              소개 수정하기
+              단어장 소개하기 
             </button>
           </div>
         )}

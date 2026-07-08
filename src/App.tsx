@@ -2,6 +2,7 @@ import { useState } from 'react'
 import VocabListPage from './pages/VocabListPage'
 import MyPage from './pages/MyPage'
 import { login, logout, signup } from './api/authApi'
+import CharacterIMG from '../public/BamtiV_icon_3rd.png'
 import './App.css'
 
 function App() {
@@ -87,7 +88,7 @@ function App() {
         />
       )
     }
-
+    
     return (
       <VocabListPage
         userId={userId}
@@ -98,9 +99,22 @@ function App() {
     )
   }
 
+  function Characters(){
+    return(
+      <div>
+        <img src={CharacterIMG}
+        alt="캐릭터"
+        style={{ width: '60px', height: 'auto' }}
+        />
+      </div>
+    )
+  }
+
+  
   return (
     <main className="login-page">
       <section className="login-card">
+        <Characters />
         <h1>The Bamti</h1>
         <h1>Word Book</h1>
         <p>나만의 영어 단어장을 만들어 보세요.</p>

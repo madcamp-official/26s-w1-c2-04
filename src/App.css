@@ -3,7 +3,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #f1f5f9;
+  background: #ffffff;
   color-scheme: light;
 }
 
@@ -11,7 +11,7 @@
   width: 360px;
   padding: 40px;
   border-radius: 20px;
-  background: white;
+  background: rgb(218, 164, 94);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
 }
 
@@ -22,7 +22,7 @@
 
 .login-card p {
   margin-bottom: 28px;
-  color: #64748b;
+  color: #030f20;
 }
 
 .auth-tabs {
@@ -40,7 +40,7 @@
   border: none;
   border-radius: 8px;
   background: transparent;
-  color: #64748b;
+  color: #0e2039;
   font-size: 15px;
   font-weight: 650;
   cursor: pointer;
@@ -111,8 +111,8 @@
   padding: 48px 40px;
   box-sizing: border-box;
   background:
-    radial-gradient(circle at top right, #dbeafe 0, transparent 32%),
-    #f8fafc;
+    radial-gradient(circle at top right, #205fb2 0, transparent 45%),
+    #c1985c;
   color-scheme: light;
   text-align: left;
 }
@@ -220,7 +220,7 @@
   border: none;
   border-radius: 8px;
   background: #2563eb;
-  color: white;
+  color: rgb(255, 255, 255);
   font-weight: 650;
   cursor: pointer;
 }
@@ -321,18 +321,11 @@
   box-shadow: 0 14px 28px rgba(15, 23, 42, 0.1);
 }
 
-.vocab-card-icon {
-  width: 36px;
-  height: 36px;
+.vocab-card-image {
+  width: 56px;
+  height: 56px;
   margin-bottom: 14px;
-  display: grid;
-  place-items: center;
-  border-radius: 12px;
-  background: #dbeafe;
-  color: #1d4ed8;
-  font-family: Georgia, serif;
-  font-size: 19px;
-  font-weight: 700;
+  object-fit: contain;
 }
 
 .vocab-card h2 {
@@ -389,8 +382,8 @@
   padding: 40px;
   box-sizing: border-box;
   background:
-    radial-gradient(circle at top right, #dbeafe 0, transparent 32%),
-    #f8fafc;
+    radial-gradient(circle at top right, #205fb2 0, transparent 45%),
+    #c1985c;
   color-scheme: light;
   text-align: left;
 }
@@ -868,6 +861,14 @@
   cursor: pointer;
 }
 
+.detail-header-actions .quiz-open-button {
+  background: #62330f;
+}
+
+.detail-header-actions .quiz-open-button:hover:not(:disabled) {
+  background: #6f4a2f;
+}
+
 .detail-header-actions button:disabled {
   cursor: not-allowed;
   opacity: 0.45;
@@ -920,8 +921,8 @@
   padding: 40px;
   box-sizing: border-box;
   background:
-    radial-gradient(circle at top right, #dbeafe 0, transparent 32%),
-    #f8fafc;
+    radial-gradient(circle at top right, #205fb2 0, transparent 45%),
+    #c1985c;
   color-scheme: light;
   text-align: left;
 }
