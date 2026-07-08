@@ -111,8 +111,7 @@
   padding: 48px 40px;
   box-sizing: border-box;
   background:
-    radial-gradient(circle at top right, #205fb2 0, transparent 45%),
-    #c1985c;
+    rgb(165, 148, 148);
   color-scheme: light;
   text-align: left;
 }
@@ -135,7 +134,7 @@
 }
 
 .vocab-eyebrow {
-  color: #2563eb;
+  color: #101b33;
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 1.5px;
@@ -286,11 +285,20 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) 220px;
   gap: 16px;
-  align-items: start;
+  align-items: stretch;
 }
 
 .vocab-toolbar .vocab-create-form {
   margin: 0;
+  height: 100%;
+  align-items: center;
+}
+
+.vocab-toolbar .sort-control {
+  height: 100%;
+  padding: 18px;
+  box-sizing: border-box;
+  justify-content: center;
 }
 
 .vocab-grid {
@@ -382,8 +390,7 @@
   padding: 40px;
   box-sizing: border-box;
   background:
-    radial-gradient(circle at top right, #205fb2 0, transparent 45%),
-    #c1985c;
+    rgb(165, 148, 148);
   color-scheme: light;
   text-align: left;
 }
@@ -414,7 +421,7 @@
 
 .detail-header h1 {
   margin: 4px 0 0;
-  color: #172554;
+  color: #000000;
   font-size: 34px;
   font-weight: 750;
 }
@@ -484,6 +491,26 @@
   white-space: pre-wrap;
 }
 
+.vocab-description-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.36);
+}
+
+.vocab-description-modal {
+  width: min(100%, 520px);
+  padding: 22px;
+  box-sizing: border-box;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: white;
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.24);
+}
+
 .vocab-description-editor {
   display: flex;
   flex-direction: column;
@@ -510,10 +537,10 @@
 
 .vocab-description-actions {
   display: flex;
+  justify-content: flex-end;
   gap: 10px;
 }
 
-.vocab-description-view button,
 .vocab-description-actions button {
   width: fit-content;
   padding: 10px 14px;
@@ -853,20 +880,24 @@
 
 .detail-header-actions button {
   padding: 9px 13px;
-  border: none;
+  border: 1px solid #cbd5e1;
   border-radius: 8px;
-  background: #2563eb;
-  color: white;
+  background: white;
+  color: #000000;
   font-weight: 650;
   cursor: pointer;
 }
 
+.detail-header-actions button:hover:not(:disabled) {
+  background: #f1f5f9;
+}
+
 .detail-header-actions .quiz-open-button {
-  background: #62330f;
+  background: white;
 }
 
 .detail-header-actions .quiz-open-button:hover:not(:disabled) {
-  background: #6f4a2f;
+  background: #f1f5f9;
 }
 
 .detail-header-actions button:disabled {
@@ -921,8 +952,7 @@
   padding: 40px;
   box-sizing: border-box;
   background:
-    radial-gradient(circle at top right, #205fb2 0, transparent 45%),
-    #c1985c;
+    rgb(165, 148, 148);
   color-scheme: light;
   text-align: left;
 }
