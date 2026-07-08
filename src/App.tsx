@@ -101,6 +101,7 @@ function App() {
   return (
     <main className="login-page">
       <section className="login-card">
+        <h1>The Bamti</h1>
         <h1>Word Book</h1>
         <p>나만의 영어 단어장을 만들어 보세요.</p>
 

@@ -9,8 +9,10 @@ import {
   updateWord,
 } from '../api/vocabularyApi'
 import type { Vocab } from '../types/vocabulary'
+import type { SortMode } from '../utils/sort'
+import { sortVocabs } from '../utils/sort'
 import VocabDetailPage from './VocabDetailPage'
-import CharacterIMG from '../assets/SmartPing.webp'
+import CharacterIMG from '../assets/BamtiV3_withoutbg.png'
 
 type VocabListPageProps = {
   userId: number
@@ -34,6 +36,7 @@ function VocabListPage({
   const [myPagePassword, setMyPagePassword] = useState('')
   const [myPagePasswordError, setMyPagePasswordError] = useState('')
   const [isCheckingPassword, setIsCheckingPassword] = useState(false)
+  const [sortMode, setSortMode] = useState<SortMode>('latest')
 
   useEffect(() => {
     let isCancelled = false
@@ -210,6 +213,7 @@ function VocabListPage({
   }
 
   const selectedVocab = vocabs.find((vocab) => vocab.id === selectedVocabId)
+  const sortedVocabs = sortVocabs(vocabs, sortMode)
 
   if (selectedVocab) {
     return (
@@ -250,7 +254,7 @@ function VocabListPage({
     <main className="vocab-page">
       <header className="vocab-header">
         <div>
-          <p className="vocab-eyebrow">MY VOCABULARY</p>
+          <p className="vocab-eyebrow">MY BAMTI VOCABULARY</p>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <h1>{username}님의 단어장</h1>
             <Characters />
@@ -280,17 +284,34 @@ function VocabListPage({
         </div>
       </header>
 
-      <form className="vocab-create-form" onSubmit={handleAddVocab}>
-        <input
-          value={vocabTitle}
-          onChange={(event) => {
-            setVocabTitle(event.target.value)
-            clearErrors()
-          }}
-          placeholder="새 단어장 이름"
-        />
-        <button type="submit">추가</button>
-      </form>
+      <section className="vocab-toolbar">
+        <form className="vocab-create-form" onSubmit={handleAddVocab}>
+          <input
+            value={vocabTitle}
+            onChange={(event) => {
+              setVocabTitle(event.target.value)
+              clearErrors()
+            }}
+            placeholder="새 단어장 이름"
+          />
+          <button type="submit">추가</button>
+        </form>
+
+        <label className="sort-control">
+          정렬
+          <select
+            value={sortMode}
+            onChange={(event) => {
+              setSortMode(event.target.value as SortMode)
+              clearErrors()
+            }}
+          >
+            <option value="latest">최신순</option>
+            <option value="en-ko">영 - 한</option>
+            <option value="ko-en">한 - 영</option>
+          </select>
+        </label>
+      </section>
 
       {requestError && <p className="api-error">{requestError}</p>}
 
@@ -305,7 +326,7 @@ function VocabListPage({
         </section>
       ) : (
         <section className="vocab-grid">
-          {vocabs.map((vocab) => (
+          {sortedVocabs.map((vocab) => (
             <article className="vocab-card" key={vocab.id}>
               <h2>{vocab.title}</h2>
               <p className="vocab-word-count">

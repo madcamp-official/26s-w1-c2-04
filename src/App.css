@@ -280,6 +280,19 @@
   background: #1d4ed8;
 }
 
+.vocab-toolbar {
+  max-width: 960px;
+  margin: 0 auto 32px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 16px;
+  align-items: start;
+}
+
+.vocab-toolbar .vocab-create-form {
+  margin: 0;
+}
+
 .vocab-grid {
   max-width: 960px;
   margin: 0 auto;
@@ -443,6 +456,15 @@
   gap: 16px;
 }
 
+.detail-search-row .word-search {
+  grid-column: 1 / -1;
+}
+
+.detail-filters {
+  display: grid;
+  gap: 16px;
+}
+
 .detail-actions {
   padding: 18px;
   display: flex;
@@ -489,7 +511,8 @@
 }
 
 .word-create-form,
-.word-search {
+.word-search,
+.sort-control {
   border: 1px solid #e2e8f0;
   border-radius: 16px;
   background: white;
@@ -513,7 +536,8 @@
 }
 
 .word-create-form label,
-.word-search {
+.word-search,
+.sort-control {
   display: flex;
   flex-direction: column;
   gap: 7px;
@@ -523,7 +547,8 @@
 }
 
 .word-create-form input,
-.word-search input {
+.word-search input,
+.sort-control select {
   min-width: 0;
   padding: 11px 13px;
   box-sizing: border-box;
@@ -535,7 +560,8 @@
 }
 
 .word-create-form input:focus,
-.word-search input:focus {
+.word-search input:focus,
+.sort-control select:focus {
   border-color: #2563eb;
   outline: 3px solid rgba(37, 99, 235, 0.15);
 }
@@ -581,6 +607,15 @@
 }
 
 .word-search {
+  padding: 18px;
+  justify-content: center;
+}
+
+.detail-search-row .word-search input {
+  width: 100%;
+}
+
+.sort-control {
   padding: 18px;
   justify-content: center;
 }
@@ -1005,6 +1040,10 @@
 
   .vocab-create-form {
     flex-direction: column;
+  }
+
+  .vocab-toolbar {
+    grid-template-columns: 1fr;
   }
 
   .vocab-create-form button {

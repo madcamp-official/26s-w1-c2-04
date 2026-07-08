@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import type { Vocab } from '../types/vocabulary'
+import type { SortMode } from '../utils/sort'
+import { sortWords } from '../utils/sort'
 import QuizPage from './QuizPage'
 
 type VocabDetailPageProps = {
@@ -35,6 +37,7 @@ function VocabDetailPage({
   const [editingWordId, setEditingWordId] = useState<number | null>(null)
   const [selectedWordIds, setSelectedWordIds] = useState<number[]>([])
   const [isQuizOpen, setIsQuizOpen] = useState(false)
+  const [sortMode, setSortMode] = useState<SortMode>('latest')
 
   function clearErrors() {
     setError('')
@@ -142,6 +145,7 @@ function VocabDetailPage({
       entry.word.toLowerCase().includes(normalizedSearch) ||
       entry.meaning.toLowerCase().includes(normalizedSearch),
   )
+  const sortedWords = sortWords(filteredWords, sortMode)
   const quizWords =
     selectedWordIds.length > 0
       ? vocab.words.filter((entry) => selectedWordIds.includes(entry.id))
@@ -183,6 +187,19 @@ function VocabDetailPage({
         </div>
       </header>
 
+      <section className="detail-controls detail-search-row">
+        <label className="word-search">
+          단어 검색
+          <input
+            value={search}
+            onChange={(event) => {
+              setSearch(event.target.value)
+              clearErrors()
+            }}
+            placeholder="단어나 뜻을 검색하세요"
+          />
+        </label>
+      </section>
       <section className="detail-controls">
         <div className="detail-actions">
           <button type="button" onClick={handleShowAddForm}>
@@ -205,18 +222,22 @@ function VocabDetailPage({
           </button>
           <span>{selectedWordIds.length}개 선택</span>
         </div>
-
-        <label className="word-search">
-          단어 검색
-          <input
-            value={search}
-            onChange={(event) => {
-              setSearch(event.target.value)
-              clearErrors()
-            }}
-            placeholder="단어나 뜻을 검색하세요"
-          />
-        </label>
+        <div className="sort-filters">
+          <label className="sort-control">
+            정렬
+            <select
+              value={sortMode}
+              onChange={(event) => {
+                setSortMode(event.target.value as SortMode)
+                clearErrors()
+              }}
+            >
+              <option value="latest">최신순</option>
+              <option value="en-ko">단어순</option>
+              <option value="ko-en">의미순</option>
+            </select>
+          </label>
+        </div>    
       </section>
 
       {formMode && (
@@ -282,7 +303,7 @@ function VocabDetailPage({
         </section>
       ) : (
         <ul className="word-list">
-          {filteredWords.map((entry) => (
+          {sortedWords.map((entry) => (
             <li className="word-item" key={entry.id}>
               <input
                 type="checkbox"
