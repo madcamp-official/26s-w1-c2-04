@@ -65,8 +65,14 @@ function VocabListPage({
       : '서버 요청에 실패했습니다.'
   }
 
+  function clearErrors() {
+    setRequestError('')
+    setMyPagePasswordError('')
+  }
+
   async function handleAddVocab(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    clearErrors()
 
     const title = vocabTitle.trim()
     if (!title) return
@@ -82,6 +88,8 @@ function VocabListPage({
   }
 
   async function handleDeleteVocab(id: number) {
+    clearErrors()
+
     try {
       await deleteVocab(id)
       setVocabs((currentVocabs) =>
@@ -99,6 +107,8 @@ function VocabListPage({
     meaning: string,
     examples: string,
   ) {
+    clearErrors()
+
     try {
       const newWord = await createWord(vocabId, word, meaning, examples)
       setVocabs((currentVocabs) =>
@@ -122,6 +132,8 @@ function VocabListPage({
     meaning: string,
     examples: string,
   ) {
+    clearErrors()
+
     try {
       const updatedWord = await updateWord(wordId, word, meaning, examples)
       setVocabs((currentVocabs) =>
@@ -144,6 +156,8 @@ function VocabListPage({
   }
 
   async function handleDeleteWords(vocabId: number, wordIds: number[]) {
+    clearErrors()
+
     try {
       await Promise.all(wordIds.map((wordId) => deleteWord(wordId)))
       setVocabs((currentVocabs) =>
@@ -167,6 +181,7 @@ function VocabListPage({
 
   async function handleOpenMyPage(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    clearErrors()
 
     if (!myPagePassword) {
       setMyPagePasswordError('기존 비밀번호를 입력해 주세요.')
@@ -191,7 +206,7 @@ function VocabListPage({
   function handleClosePasswordModal() {
     setIsPasswordModalOpen(false)
     setMyPagePassword('')
-    setMyPagePasswordError('')
+    clearErrors()
   }
 
   const selectedVocab = vocabs.find((vocab) => vocab.id === selectedVocabId)
@@ -203,7 +218,7 @@ function VocabListPage({
         requestError={requestError}
         onBack={() => {
           setSelectedVocabId(null)
-          setRequestError('')
+          clearErrors()
         }}
         onAddWord={(word, meaning, examples) =>
           handleAddWord(selectedVocab.id, word, meaning, examples)
@@ -214,6 +229,7 @@ function VocabListPage({
         onDeleteWords={(wordIds) =>
           handleDeleteWords(selectedVocab.id, wordIds)
         }
+        onClearRequestError={clearErrors}
       />
     )
   }
@@ -244,11 +260,21 @@ function VocabListPage({
           <button
             className="logout-button"
             type="button"
-            onClick={() => setIsPasswordModalOpen(true)}
+            onClick={() => {
+              clearErrors()
+              setIsPasswordModalOpen(true)
+            }}
           >
             회원정보
           </button>
-          <button className="logout-button" type="button" onClick={onLogout}>
+          <button
+            className="logout-button"
+            type="button"
+            onClick={() => {
+              clearErrors()
+              onLogout()
+            }}
+          >
             로그아웃
           </button>
         </div>
@@ -257,7 +283,10 @@ function VocabListPage({
       <form className="vocab-create-form" onSubmit={handleAddVocab}>
         <input
           value={vocabTitle}
-          onChange={(event) => setVocabTitle(event.target.value)}
+          onChange={(event) => {
+            setVocabTitle(event.target.value)
+            clearErrors()
+          }}
           placeholder="새 단어장 이름"
         />
         <button type="submit">추가</button>
@@ -286,14 +315,20 @@ function VocabListPage({
                 <button
                   className="open-vocab-button"
                   type="button"
-                  onClick={() => setSelectedVocabId(vocab.id)}
+                  onClick={() => {
+                    clearErrors()
+                    setSelectedVocabId(vocab.id)
+                  }}
                 >
                   열기
                 </button>
                 <button
                   className="delete-button"
                   type="button"
-                  onClick={() => handleDeleteVocab(vocab.id)}
+                  onClick={() => {
+                    clearErrors()
+                    handleDeleteVocab(vocab.id)
+                  }}
                 >
                   삭제
                 </button>
@@ -313,7 +348,10 @@ function VocabListPage({
                 <input
                   type="password"
                   value={myPagePassword}
-                  onChange={(event) => setMyPagePassword(event.target.value)}
+                  onChange={(event) => {
+                    setMyPagePassword(event.target.value)
+                    clearErrors()
+                  }}
                   placeholder="기존 비밀번호를 입력하세요"
                   autoFocus
                 />

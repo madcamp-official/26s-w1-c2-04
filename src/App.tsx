@@ -16,6 +16,7 @@ function App() {
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    setError('')
 
     const trimmedUsername = username.trim()
 
@@ -126,7 +127,10 @@ function App() {
             <input
               type="text"
               value={username}
-              onChange={(event) => setUsername(event.target.value)}
+              onChange={(event) => {
+                setUsername(event.target.value)
+                setError('')
+              }}
               placeholder="아이디를 입력하세요"
             />
           </label>
@@ -136,7 +140,10 @@ function App() {
             <input
               type="password"
               value={password}
-              onChange={(event) => setPassword(event.target.value)}
+              onChange={(event) => {
+                setPassword(event.target.value)
+                setError('')
+              }}
               placeholder="비밀번호를 입력하세요"
             />
           </label>
@@ -147,7 +154,10 @@ function App() {
               <input
                 type="password"
                 value={passwordConfirm}
-                onChange={(event) => setPasswordConfirm(event.target.value)}
+                onChange={(event) => {
+                  setPasswordConfirm(event.target.value)
+                  setError('')
+                }}
                 placeholder="비밀번호를 한 번 더 입력하세요"
               />
             </label>

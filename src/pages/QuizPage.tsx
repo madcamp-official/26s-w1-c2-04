@@ -5,13 +5,14 @@ type QuizPageProps = {
   vocab: Vocab
   words: WordEntry[]
   onBack: () => void
+  onClearErrors: () => void
 }
 
 function normalizeAnswer(value: string) {
   return value.trim().toLowerCase()
 }
 
-function QuizPage({ vocab, words, onBack }: QuizPageProps) {
+function QuizPage({ vocab, words, onBack, onClearErrors }: QuizPageProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [answer, setAnswer] = useState('')
   const [showHint, setShowHint] = useState(false)
@@ -54,11 +55,13 @@ function QuizPage({ vocab, words, onBack }: QuizPageProps) {
 
   function handleNext() {
     if (isLastWord) return
+    onClearErrors()
     setCurrentIndex((index) => index + 1)
     resetCard()
   }
 
   function handleRestart() {
+    onClearErrors()
     setCurrentIndex(0)
     setAnsweredCount(0)
     setCorrectCount(0)

@@ -33,6 +33,7 @@ function MyPage({ userId, username, onBack, onDeleted }: MyPageProps) {
   ) {
     event.preventDefault()
     setMessage('')
+    setError('')
 
     if (!validatePasswords()) return
 
@@ -56,6 +57,7 @@ function MyPage({ userId, username, onBack, onDeleted }: MyPageProps) {
 
   async function handleDeleteAccount() {
     setMessage('')
+    setError('')
 
     setIsSubmitting(true)
 
@@ -86,7 +88,10 @@ function MyPage({ userId, username, onBack, onDeleted }: MyPageProps) {
             <input
               type="password"
               value={newPassword}
-              onChange={(event) => setNewPassword(event.target.value)}
+              onChange={(event) => {
+                setNewPassword(event.target.value)
+                setError('')
+              }}
               placeholder="새로운 비밀번호를 입력하세요"
             />
           </label>
@@ -95,7 +100,10 @@ function MyPage({ userId, username, onBack, onDeleted }: MyPageProps) {
             <input
               type="password"
               value={newPasswordConfirm}
-              onChange={(event) => setNewPasswordConfirm(event.target.value)}
+              onChange={(event) => {
+                setNewPasswordConfirm(event.target.value)
+                setError('')
+              }}
               placeholder="새로운 비밀번호를 한 번 더 입력하세요"
             />
           </label>
