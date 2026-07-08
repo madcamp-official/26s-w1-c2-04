@@ -190,7 +190,6 @@ function VocabDetailPage({
           단어장 목록
         </button>
         <div>
-          <p className="vocab-eyebrow">VOCABULARY</p>
           <h1>{vocab.title}</h1>
         </div>
         <div className="detail-header-actions">
@@ -204,6 +203,16 @@ function VocabDetailPage({
             disabled={vocab.words.length === 0}
           >
             퀴즈 치기
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              clearErrors()
+              setDescriptionDraft(vocab.description)
+              setIsEditingDescription(true)
+            }}
+          >
+            단어장 소개하기
           </button>
           <span className="word-count">{vocab.words.length}개 단어</span>
         </div>
@@ -222,50 +231,39 @@ function VocabDetailPage({
           />
         </label>
       </section>
-      <section className="vocab-description">
-        <div className="vocab-description-header">
-          <h2>단어장 소개</h2>
-        </div>
-        {isEditingDescription ? (
-          <div className="vocab-description-editor">
-            <textarea
-              value={descriptionDraft}
-              onChange={(event) => {
-                setDescriptionDraft(event.target.value)
-                clearErrors()
-              }}
-              placeholder="이 단어장을 어떻게 쓰는지 적어보세요"
-              rows={4}
-            />
-            <div className="vocab-description-actions">
-              <button type="button" onClick={handleSaveDescription}>
-                저장
-              </button>
-              <button
-                className="secondary-button"
-                type="button"
-                onClick={handleCancelDescriptionEdit}
-              >
-                취소
-              </button>
+      {isEditingDescription && (
+        <div className="vocab-description-modal-backdrop">
+          <section className="vocab-description-modal" aria-modal="true">
+            <div className="vocab-description-header">
+              <h2>단어장 소개</h2>
             </div>
-          </div>
-        ) : (
-          <div className="vocab-description-view">
-            <p>{vocab.description || '아직 소개가 없습니다.'}</p>
-            <button
-              type="button"
-              onClick={() => {
-                clearErrors()
-                setDescriptionDraft(vocab.description)
-                setIsEditingDescription(true)
-              }}
-            >
-              단어장 소개하기 
-            </button>
-          </div>
-        )}
-      </section>
+            <div className="vocab-description-editor">
+              <textarea
+                value={descriptionDraft}
+                onChange={(event) => {
+                  setDescriptionDraft(event.target.value)
+                  clearErrors()
+                }}
+                placeholder="이 단어장을 어떻게 쓰는지 적어보세요"
+                rows={5}
+                autoFocus
+              />
+              <div className="vocab-description-actions">
+                <button type="button" onClick={handleSaveDescription}>
+                  저장
+                </button>
+                <button
+                  className="secondary-button"
+                  type="button"
+                  onClick={handleCancelDescriptionEdit}
+                >
+                  취소
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+      )}
       <section className="detail-controls">
         <div className="detail-actions">
           <button type="button" onClick={handleShowAddForm}>
@@ -303,7 +301,7 @@ function VocabDetailPage({
               <option value="ko-en">의미순</option>
             </select>
           </label>
-        </div>    
+        </div>
       </section>
 
       {formMode && (

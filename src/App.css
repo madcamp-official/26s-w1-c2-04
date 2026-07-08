@@ -4,6 +4,7 @@
   justify-content: center;
   align-items: center;
   background: #ffffff;
+  color: #0f172a;
   color-scheme: light;
 }
 
@@ -11,18 +12,19 @@
   width: 360px;
   padding: 40px;
   border-radius: 20px;
-  background: rgb(218, 164, 94);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
 }
 
 .login-card h1 {
   margin-bottom: 8px;
-  color: #2563eb;
+  color: #0f172a;
 }
 
 .login-card p {
   margin-bottom: 28px;
-  color: #030f20;
+  color: #475569;
 }
 
 .auth-tabs {
@@ -32,7 +34,7 @@
   grid-template-columns: 1fr 1fr;
   gap: 4px;
   border-radius: 10px;
-  background: #e2e8f0;
+  background: #f1f5f9;
 }
 
 .auth-tabs button {
@@ -40,7 +42,7 @@
   border: none;
   border-radius: 8px;
   background: transparent;
-  color: #0e2039;
+  color: #64748b;
   font-size: 15px;
   font-weight: 650;
   cursor: pointer;
@@ -48,7 +50,7 @@
 
 .auth-tabs button.active {
   background: white;
-  color: #2563eb;
+  color: #0f172a;
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
 }
 
@@ -62,6 +64,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  color: #334155;
   text-align: left;
 }
 
@@ -69,21 +72,28 @@
   padding: 12px;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
+  background: #ffffff;
+  color: #0f172a;
   font-size: 16px;
+}
+
+.login-form input:focus {
+  border-color: #0f172a;
+  outline: 3px solid rgba(15, 23, 42, 0.12);
 }
 
 .login-form button {
   padding: 13px;
   border: none;
   border-radius: 8px;
-  background: #2563eb;
+  background: #0f172a;
   color: white;
   font-size: 16px;
   cursor: pointer;
 }
 
 .login-form button:hover {
-  background: #1d4ed8;
+  background: #1e293b;
 }
 
 .error-message {
@@ -110,9 +120,8 @@
   min-height: 100vh;
   padding: 48px 40px;
   box-sizing: border-box;
-  background:
-    radial-gradient(circle at top right, #205fb2 0, transparent 45%),
-    #c1985c;
+  background: #ffffff;
+  color: #0f172a;
   color-scheme: light;
   text-align: left;
 }
@@ -128,14 +137,14 @@
 
 .vocab-header h1 {
   margin: 4px 0 0;
-  color: #172554;
+  color: #0f172a;
   font-size: 32px;
   font-weight: 750;
   letter-spacing: -0.8px;
 }
 
 .vocab-eyebrow {
-  color: #2563eb;
+  color: #101b33;
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 1.5px;
@@ -183,7 +192,7 @@
 
 .password-modal h2 {
   margin: 0 0 18px;
-  color: #172554;
+  color: #0f172a;
   font-size: 22px;
 }
 
@@ -219,8 +228,8 @@
   padding: 10px 16px;
   border: none;
   border-radius: 8px;
-  background: #2563eb;
-  color: rgb(255, 255, 255);
+  background: #0f172a;
+  color: white;
   font-weight: 650;
   cursor: pointer;
 }
@@ -245,8 +254,8 @@
   box-sizing: border-box;
   border: 1px solid #e2e8f0;
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  background: #ffffff;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
 }
 
 .vocab-create-form input {
@@ -261,15 +270,15 @@
 }
 
 .vocab-create-form input:focus {
-  border-color: #2563eb;
-  outline: 3px solid rgba(37, 99, 235, 0.15);
+  border-color: #0f172a;
+  outline: 3px solid rgba(15, 23, 42, 0.12);
 }
 
 .vocab-create-form button {
   padding: 13px 26px;
   border: none;
   border-radius: 9px;
-  background: #2563eb;
+  background: #0f172a;
   color: white;
   font-size: 16px;
   font-weight: 650;
@@ -277,7 +286,7 @@
 }
 
 .vocab-create-form button:hover {
-  background: #1d4ed8;
+  background: #1e293b;
 }
 
 .vocab-toolbar {
@@ -286,11 +295,20 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) 220px;
   gap: 16px;
-  align-items: start;
+  align-items: stretch;
 }
 
 .vocab-toolbar .vocab-create-form {
   margin: 0;
+  height: 100%;
+  align-items: center;
+}
+
+.vocab-toolbar .sort-control {
+  height: 100%;
+  padding: 18px;
+  box-sizing: border-box;
+  justify-content: center;
 }
 
 .vocab-grid {
@@ -308,9 +326,9 @@
   flex-direction: column;
   box-sizing: border-box;
   border: 1px solid #e2e8f0;
-  border-radius: 18px;
+  border-radius: 20px;
   background: white;
-  box-shadow: 0 5px 16px rgba(15, 23, 42, 0.05);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
@@ -330,7 +348,7 @@
 
 .vocab-card h2 {
   margin: 0 0 14px;
-  color: #1e293b;
+  color: #0f172a;
   font-size: 18px;
   font-weight: 700;
   overflow-wrap: anywhere;
@@ -353,14 +371,14 @@
   padding: 7px 14px;
   border: none;
   border-radius: 7px;
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: #0f172a;
+  color: white;
   font-weight: 650;
   cursor: pointer;
 }
 
 .open-vocab-button:hover {
-  background: #bfdbfe;
+  background: #1e293b;
 }
 
 .delete-button {
@@ -381,9 +399,8 @@
   min-height: 100vh;
   padding: 40px;
   box-sizing: border-box;
-  background:
-    radial-gradient(circle at top right, #205fb2 0, transparent 45%),
-    #c1985c;
+  background: #ffffff;
+  color: #0f172a;
   color-scheme: light;
   text-align: left;
 }
@@ -414,7 +431,7 @@
 
 .detail-header h1 {
   margin: 4px 0 0;
-  color: #172554;
+  color: #000000;
   font-size: 34px;
   font-weight: 750;
 }
@@ -437,8 +454,8 @@
   justify-self: end;
   padding: 7px 12px;
   border-radius: 999px;
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: #f1f5f9;
+  color: #0f172a;
   font-size: 14px;
   font-weight: 650;
 }
@@ -467,7 +484,7 @@
 
 .vocab-description-header h2 {
   margin: 0 0 12px;
-  color: #172554;
+  color: #0f172a;
   font-size: 18px;
 }
 
@@ -482,6 +499,26 @@
   color: #475569;
   line-height: 1.6;
   white-space: pre-wrap;
+}
+
+.vocab-description-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.36);
+}
+
+.vocab-description-modal {
+  width: min(100%, 520px);
+  padding: 22px;
+  box-sizing: border-box;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: white;
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.24);
 }
 
 .vocab-description-editor {
@@ -504,22 +541,22 @@
 }
 
 .vocab-description-editor textarea:focus {
-  border-color: #2563eb;
-  outline: 3px solid rgba(37, 99, 235, 0.15);
+  border-color: #0f172a;
+  outline: 3px solid rgba(15, 23, 42, 0.12);
 }
 
 .vocab-description-actions {
   display: flex;
+  justify-content: flex-end;
   gap: 10px;
 }
 
-.vocab-description-view button,
 .vocab-description-actions button {
   width: fit-content;
   padding: 10px 14px;
   border: none;
   border-radius: 8px;
-  background: #2563eb;
+  background: #0f172a;
   color: white;
   font-weight: 650;
   cursor: pointer;
@@ -551,14 +588,14 @@
   padding: 9px 13px;
   border: none;
   border-radius: 8px;
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: #f1f5f9;
+  color: #0f172a;
   font-weight: 650;
   cursor: pointer;
 }
 
 .detail-actions button:hover:not(:disabled) {
-  background: #bfdbfe;
+  background: #e2e8f0;
 }
 
 .detail-actions .selected-delete-button {
@@ -633,15 +670,15 @@
 .word-create-form input:focus,
 .word-search input:focus,
 .sort-control select:focus {
-  border-color: #2563eb;
-  outline: 3px solid rgba(37, 99, 235, 0.15);
+  border-color: #0f172a;
+  outline: 3px solid rgba(15, 23, 42, 0.12);
 }
 
 .word-create-form > button {
   padding: 11px 16px;
   border: none;
   border-radius: 8px;
-  background: #2563eb;
+  background: #0f172a;
   color: white;
   font-size: 15px;
   font-weight: 650;
@@ -649,7 +686,7 @@
 }
 
 .word-create-form > button:hover {
-  background: #1d4ed8;
+  background: #1e293b;
 }
 
 .word-create-form > .cancel-form-button {
@@ -715,7 +752,7 @@
   width: 18px;
   height: 18px;
   flex: 0 0 auto;
-  accent-color: #2563eb;
+  accent-color: #0f172a;
   cursor: pointer;
 }
 
@@ -729,7 +766,7 @@
 }
 
 .word-item strong {
-  color: #172554;
+  color: #0f172a;
   font-size: 18px;
   overflow-wrap: anywhere;
 }
@@ -747,7 +784,7 @@
   justify-content: center;
   border: 2px dashed #cbd5e1;
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.55);
+  background: #f8fafc;
   text-align: center;
 }
 
@@ -772,7 +809,7 @@
   box-sizing: border-box;
   border: 2px dashed #cbd5e1;
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.55);
+  background: #f8fafc;
   text-align: center;
 }
 
@@ -783,8 +820,8 @@
   display: grid;
   place-items: center;
   border-radius: 16px;
-  background: #dbeafe;
-  color: #2563eb;
+  background: #f1f5f9;
+  color: #0f172a;
   font-family: Georgia, serif;
   font-size: 28px;
   font-weight: 700;
@@ -807,9 +844,8 @@
   box-sizing: border-box;
   display: grid;
   place-items: center;
-  background:
-    radial-gradient(circle at top right, #dbeafe 0, transparent 32%),
-    #f8fafc;
+  background: #ffffff;
+  color: #0f172a;
   color-scheme: light;
 }
 
@@ -826,7 +862,7 @@
 
 .mypage-card h1 {
   margin: 4px 0 24px;
-  color: #172554;
+  color: #0f172a;
 }
 
 .mypage-form {
@@ -853,20 +889,24 @@
 
 .detail-header-actions button {
   padding: 9px 13px;
-  border: none;
+  border: 1px solid #cbd5e1;
   border-radius: 8px;
-  background: #2563eb;
-  color: white;
+  background: white;
+  color: #000000;
   font-weight: 650;
   cursor: pointer;
 }
 
+.detail-header-actions button:hover:not(:disabled) {
+  background: #f1f5f9;
+}
+
 .detail-header-actions .quiz-open-button {
-  background: #62330f;
+  background: white;
 }
 
 .detail-header-actions .quiz-open-button:hover:not(:disabled) {
-  background: #6f4a2f;
+  background: #f1f5f9;
 }
 
 .detail-header-actions button:disabled {
@@ -893,7 +933,7 @@
   padding: 12px;
   border: none;
   border-radius: 8px;
-  background: #2563eb;
+  background: #0f172a;
   color: white;
   font-size: 15px;
   font-weight: 650;
@@ -920,9 +960,8 @@
   min-height: 100vh;
   padding: 40px;
   box-sizing: border-box;
-  background:
-    radial-gradient(circle at top right, #205fb2 0, transparent 45%),
-    #c1985c;
+  background: #ffffff;
+  color: #0f172a;
   color-scheme: light;
   text-align: left;
 }
@@ -955,7 +994,7 @@
 
 .quiz-header h1 {
   margin: 4px 0 0;
-  color: #172554;
+  color: #0f172a;
   font-size: 32px;
 }
 
@@ -981,7 +1020,7 @@
 }
 
 .quiz-stats strong {
-  color: #1d4ed8;
+  color: #0f172a;
 }
 
 .flashcard {
@@ -1002,14 +1041,14 @@
 
 .flashcard p {
   margin: 0 0 12px;
-  color: #2563eb;
+  color: #64748b;
   font-size: 13px;
   font-weight: 700;
 }
 
 .flashcard h2 {
   margin: 0;
-  color: #172554;
+  color: #0f172a;
   font-size: 44px;
   overflow-wrap: anywhere;
 }
@@ -1020,8 +1059,8 @@
   padding: 14px 16px;
   box-sizing: border-box;
   border-radius: 10px;
-  background: #eff6ff;
-  color: #1e3a8a;
+  background: #f8fafc;
+  color: #334155;
   font-size: 15px;
   overflow-wrap: anywhere;
 }
@@ -1066,7 +1105,7 @@
   padding: 12px 16px;
   border: none;
   border-radius: 8px;
-  background: #2563eb;
+  background: #0f172a;
   color: white;
   font-weight: 650;
   cursor: pointer;
@@ -1088,8 +1127,8 @@
   margin-top: 12px;
   padding: 14px 16px;
   border-radius: 10px;
-  background: #eff6ff;
-  color: #1e3a8a;
+  background: #f8fafc;
+  color: #334155;
 }
 
 .quiz-feedback {
