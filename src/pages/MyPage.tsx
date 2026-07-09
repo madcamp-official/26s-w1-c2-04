@@ -1,14 +1,24 @@
 import { useState } from 'react'
 import { changePassword, deleteUser } from '../api/authApi'
+import type { ThemeMode } from '../types/theme'
 
 type MyPageProps = {
   userId: number
   username: string
+  themeMode: ThemeMode
+  onThemeModeChange: (themeMode: ThemeMode) => void
   onBack: () => void
   onDeleted: () => void
 }
 
-function MyPage({ userId, username, onBack, onDeleted }: MyPageProps) {
+function MyPage({
+  userId,
+  username,
+  themeMode,
+  onThemeModeChange,
+  onBack,
+  onDeleted,
+}: MyPageProps) {
   const [newPassword, setNewPassword] = useState('')
   const [newPasswordConfirm, setNewPasswordConfirm] = useState('')
   const [message, setMessage] = useState('')
@@ -87,6 +97,26 @@ function MyPage({ userId, username, onBack, onDeleted }: MyPageProps) {
         </div>
         <p className="vocab-eyebrow">MY PAGE</p>
         <h1>{username}님의 회원정보</h1>
+
+        <section className="theme-mode-panel" aria-label="화면 모드 선택">
+          <span>화면 모드</span>
+          <div className="theme-mode-actions">
+            <button
+              type="button"
+              className={themeMode === 'default' ? 'active' : ''}
+              onClick={() => onThemeModeChange('default')}
+            >
+              기본 모드
+            </button>
+            <button
+              type="button"
+              className={themeMode === 'bamti' ? 'active' : ''}
+              onClick={() => onThemeModeChange('bamti')}
+            >
+              밤티 모드
+            </button>
+          </div>
+        </section>
 
         <form className="mypage-form" onSubmit={handleChangePassword}>
           <label>

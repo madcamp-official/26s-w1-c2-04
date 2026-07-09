@@ -3,6 +3,7 @@ import VocabListPage from './pages/VocabListPage'
 import MyPage from './pages/MyPage'
 import SharedVocabPage from './pages/SharedVocabPage'
 import { login, logout, signup } from './api/authApi'
+import type { ThemeMode } from './types/theme'
 import './App.css'
 
 function Characters() {
@@ -26,6 +27,7 @@ function App() {
   const [currentPage, setCurrentPage] = useState<
     'vocab' | 'mypage' | 'shared'
   >('vocab')
+  const [themeMode, setThemeMode] = useState<ThemeMode>('default')
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -97,6 +99,8 @@ function App() {
         <MyPage
           userId={userId}
           username={username}
+          themeMode={themeMode}
+          onThemeModeChange={setThemeMode}
           onBack={() => setCurrentPage('vocab')}
           onDeleted={handleLogout}
         />
@@ -107,6 +111,7 @@ function App() {
       return (
         <SharedVocabPage
           userId={userId}
+          themeMode={themeMode}
           onBack={() => setCurrentPage('vocab')}
         />
       )
@@ -116,6 +121,7 @@ function App() {
       <VocabListPage
         userId={userId}
         username={username}
+        themeMode={themeMode}
         onLogout={handleLogout}
         onOpenMyPage={() => setCurrentPage('mypage')}
         onOpenSharedPage={() => setCurrentPage('shared')}

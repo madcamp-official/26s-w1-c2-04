@@ -13,25 +13,41 @@ import {
 import type { Vocab } from '../types/vocabulary'
 import type { VocabSortMode } from '../utils/sort'
 import { getShareCount, sortVocabs } from '../utils/sort'
+import type { ThemeMode } from '../types/theme'
 import VocabDetailPage from './VocabDetailPage'
 import CharacterIMG from '../assets/BamtiV3_withoutbg.png'
 
 type VocabListPageProps = {
   userId: number
   username: string
+  themeMode: ThemeMode
   onLogout: () => void
   onOpenMyPage: () => void
   onOpenSharedPage: () => void
 }
 
-function Characters() {
+function Characters({ isBamtiMode }: { isBamtiMode: boolean }) {
+  if (!isBamtiMode) {
+    return (
+      <div>
+        <img
+          src={CharacterIMG}
+          alt="캐릭터"
+          style={{ width: '60px', height: 'auto' }}
+        />
+      </div>
+    )
+  }
+
   return (
-    <div>
+    <div className="bamti-stack" aria-hidden="true">
+      <span className="bamti-speech bamti-speech-left">네?</span>
       <img
         src={CharacterIMG}
-        alt="캐릭터"
-        style={{ width: '60px', height: 'auto' }}
+        alt=""
+        className="bamti-character"
       />
+      <span className="bamti-speech bamti-speech-right">완전 밤티</span>
     </div>
   )
 }
@@ -39,10 +55,12 @@ function Characters() {
 function VocabListPage({
   userId,
   username,
+  themeMode,
   onLogout,
   onOpenMyPage,
   onOpenSharedPage,
 }: VocabListPageProps) {
+  const isBamtiMode = themeMode === 'bamti'
   const [vocabTitle, setVocabTitle] = useState('')
   const [vocabs, setVocabs] = useState<Vocab[]>([])
   const [selectedVocabId, setSelectedVocabId] = useState<number | null>(null)
@@ -311,18 +329,22 @@ function VocabListPage({
           handleUpdateVocabTags(selectedVocab.id, tags)
         }
         onClearRequestError={clearErrors}
+        themeMode={themeMode}
       />
     )
   }
 
   return (
-    <main className="vocab-page">
+    <main className={`vocab-page${isBamtiMode ? ' bamti-page' : ''}`}>
+      {isBamtiMode && <div className="bamti-noise" aria-hidden="true" />}
       <header className="vocab-header">
         <div>
-          <p className="vocab-eyebrow">MY BAMTI VOCABULARY</p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <h1>{username}님의 단어장</h1>
-            <Characters />
+          <p className="vocab-eyebrow">
+            {isBamtiMode ? 'MY BAMTI VOCABULARY' : 'MY VOCABULARY'}
+          </p>
+          <div className={isBamtiMode ? 'bamti-title-row' : 'vocab-title-row'}>
+            <h1>{isBamtiMode ? `${username}님의 밤티 단어장` : `${username}님의 단어장`}</h1>
+            <Characters isBamtiMode={isBamtiMode} />
           </div>
         </div>
         <div className="vocab-header-actions">
@@ -361,6 +383,9 @@ function VocabListPage({
 
       <section className="vocab-toolbar">
         <form className="vocab-create-form" onSubmit={handleAddVocab}>
+          {isBamtiMode && (
+            <span className="bamti-form-label">새로운 밤티 생성</span>
+          )}
           <input
             value={vocabTitle}
             onChange={(event) => {
@@ -369,11 +394,11 @@ function VocabListPage({
             }}
             placeholder="새 단어장 이름"
           />
-          <button type="submit">추가</button>
+          <button type="submit">{isBamtiMode ? '뚝딱' : '추가'}</button>
         </form>
 
         <label className="sort-control">
-          정렬
+          {isBamtiMode ? '밤티 줄세우기' : '정렬'}
           <select
             value={sortMode}
             onChange={(event) => {
@@ -419,18 +444,21 @@ function VocabListPage({
       )}
 
       {isLoading ? (
-        <section className="empty-vocab">
-          <h2>단어장을 불러오는 중입니다</h2>
+        <section className={`empty-vocab${isBamtiMode ? ' bamti-empty' : ''}`}>
+          {isBamtiMode && <Characters isBamtiMode={isBamtiMode} />}
+          <h2>{isBamtiMode ? '단어장을 덜그럭 불러오는 중입니다' : '단어장을 불러오는 중입니다'}</h2>
         </section>
       ) : vocabs.length === 0 ? (
-        <section className="empty-vocab">
+        <section className={`empty-vocab${isBamtiMode ? ' bamti-empty' : ''}`}>
+          {isBamtiMode && <Characters isBamtiMode={isBamtiMode} />}
           <h2>아직 단어장이 없습니다</h2>
-          <p>위 입력창에서 첫 번째 단어장을 만들어 보세요.</p>
+          <p>{isBamtiMode ? '위 입력창에서 첫 번째 밤티를 만들어 보세요.' : '위 입력창에서 첫 번째 단어장을 만들어 보세요.'}</p>
         </section>
       ) : sortedVocabs.length === 0 ? (
-        <section className="empty-vocab">
+        <section className={`empty-vocab${isBamtiMode ? ' bamti-empty' : ''}`}>
+          {isBamtiMode && <Characters isBamtiMode={isBamtiMode} />}
           <h2>검색 결과가 없습니다</h2>
-          <p>다른 이름이나 태그로 검색해 보세요.</p>
+          <p>{isBamtiMode ? '이 밤티는 아직 발견되지 않았습니다.' : '다른 이름이나 태그로 검색해 보세요.'}</p>
         </section>
       ) : (
         <section className="vocab-grid">
@@ -441,7 +469,15 @@ function VocabListPage({
               .filter(Boolean)
 
             return (
-              <article className="vocab-card" key={vocab.id}>
+              <article
+                className={`vocab-card${isBamtiMode ? ' bamti-card' : ''}`}
+                key={vocab.id}
+              >
+                {isBamtiMode && (
+                  <span className="bamti-card-sticker">
+                    밤티력 +{(vocab.words.length % 9) + 1}
+                  </span>
+                )}
                 <h2>{vocab.title}</h2>
                 {tags.length > 0 && (
                   <div className="vocab-tags">
@@ -452,6 +488,7 @@ function VocabListPage({
                 )}
                 <p className="vocab-word-count">
                   {vocab.words.length}개 단어 · 공유 {getShareCount(vocab)}회
+
                 </p>
                 <div className="vocab-card-actions">
                   <button

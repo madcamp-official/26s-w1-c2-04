@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { Vocab } from '../types/vocabulary'
 import type { SortMode } from '../utils/sort'
 import { getShareCount, sortWords } from '../utils/sort'
+import type { ThemeMode } from '../types/theme'
 import QuizPage from './QuizPage'
 
 type VocabDetailPageProps = {
@@ -18,6 +19,7 @@ type VocabDetailPageProps = {
   ) => Promise<void>
   onDeleteWords: (wordIds: number[]) => Promise<void>
   onClearRequestError: () => void
+  themeMode: ThemeMode
 }
 
 function VocabDetailPage({
@@ -29,7 +31,9 @@ function VocabDetailPage({
   onUpdateWord,
   onDeleteWords,
   onClearRequestError,
+  themeMode,
 }: VocabDetailPageProps) {
+  const isBamtiMode = themeMode === 'bamti'
   const [word, setWord] = useState('')
   const [meaning, setMeaning] = useState('')
   const [examples, setExamples] = useState('')
@@ -185,12 +189,14 @@ function VocabDetailPage({
         words={quizWords}
         onBack={() => setIsQuizOpen(false)}
         onClearErrors={clearErrors}
+        themeMode={themeMode}
       />
     )
   }
 
   return (
-    <main className="detail-page">
+    <main className={`detail-page${isBamtiMode ? ' bamti-page bamti-work-page' : ''}`}>
+      {isBamtiMode && <div className="bamti-noise" aria-hidden="true" />}
       <header className="detail-header">
         <button className="back-button" type="button" onClick={onBack}>
           단어장 목록

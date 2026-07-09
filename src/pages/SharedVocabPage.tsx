@@ -1,14 +1,21 @@
 import { useEffect, useState } from 'react'
 import { copySharedVocab, getSharedVocabs } from '../api/vocabularyApi'
 import type { Vocab } from '../types/vocabulary'
+import type { ThemeMode } from '../types/theme'
 import { getShareCount, sortVocabs } from '../utils/sort'
 
 type SharedVocabPageProps = {
   userId: number
+  themeMode: ThemeMode
   onBack: () => void
 }
 
-function SharedVocabPage({ userId, onBack }: SharedVocabPageProps) {
+function SharedVocabPage({
+  userId,
+  themeMode,
+  onBack,
+}: SharedVocabPageProps) {
+  const isBamtiMode = themeMode === 'bamti'
   const [sharedVocabs, setSharedVocabs] = useState<Vocab[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [requestError, setRequestError] = useState('')
@@ -79,11 +86,12 @@ function SharedVocabPage({ userId, onBack }: SharedVocabPageProps) {
   const sortedVocabs = sortVocabs(filteredVocabs, 'share-count')
 
   return (
-    <main className="vocab-page">
+    <main className={`vocab-page${isBamtiMode ? ' bamti-page' : ''}`}>
+      {isBamtiMode && <div className="bamti-noise" aria-hidden="true" />}
       <header className="vocab-header">
         <div>
           <p className="vocab-eyebrow">SHARED BAMTI VOCABULARY</p>
-          <h1>공유 단어장</h1>
+          <h1>{isBamtiMode ? '공유 밤티 단어장' : '공유 단어장'}</h1>
         </div>
         <div className="vocab-header-actions">
           <button className="logout-button" type="button" onClick={onBack}>
@@ -116,18 +124,18 @@ function SharedVocabPage({ userId, onBack }: SharedVocabPageProps) {
       )}
 
       {isLoading ? (
-        <section className="empty-vocab">
-          <h2>공유 단어장을 불러오는 중입니다</h2>
+        <section className={`empty-vocab${isBamtiMode ? ' bamti-empty' : ''}`}>
+          <h2>{isBamtiMode ? '공유 밤티를 덜그럭 불러오는 중입니다' : '공유 단어장을 불러오는 중입니다'}</h2>
         </section>
       ) : sharedVocabs.length === 0 ? (
-        <section className="empty-vocab">
+        <section className={`empty-vocab${isBamtiMode ? ' bamti-empty' : ''}`}>
           <h2>아직 공유된 단어장이 없습니다</h2>
-          <p>다른 사용자가 공개한 단어장이 여기에 표시됩니다.</p>
+          <p>{isBamtiMode ? '아직 길 잃은 밤티가 없습니다.' : '다른 사용자가 공개한 단어장이 여기에 표시됩니다.'}</p>
         </section>
       ) : sortedVocabs.length === 0 ? (
-        <section className="empty-vocab">
+        <section className={`empty-vocab${isBamtiMode ? ' bamti-empty' : ''}`}>
           <h2>검색 결과가 없습니다</h2>
-          <p>다른 이름이나 태그로 검색해 보세요.</p>
+          <p>{isBamtiMode ? '이 밤티는 아직 발견되지 않았습니다.' : '다른 이름이나 태그로 검색해 보세요.'}</p>
         </section>
       ) : (
         <section className="vocab-grid">
@@ -139,7 +147,15 @@ function SharedVocabPage({ userId, onBack }: SharedVocabPageProps) {
               .filter(Boolean)
 
             return (
-              <article className="vocab-card" key={vocab.id}>
+              <article
+                className={`vocab-card${isBamtiMode ? ' bamti-card' : ''}`}
+                key={vocab.id}
+              >
+                {isBamtiMode && (
+                  <span className="bamti-card-sticker">
+                    밤티력 +{(getShareCount(vocab) % 9) + 1}
+                  </span>
+                )}
                 <h2>{vocab.title}</h2>
                 {tags.length > 0 && (
                   <div className="vocab-tags">
@@ -149,7 +165,7 @@ function SharedVocabPage({ userId, onBack }: SharedVocabPageProps) {
                   </div>
                 )}
                 <p className="vocab-word-count">
-                  {vocab.words.length}개 단어 · 공유 {getShareCount(vocab)}회
+                  {vocab.words.length}개 단어 · 공유 {getShareCount(vocab)}
                 </p>
                 <div className="vocab-card-actions">
                   <button
