@@ -800,7 +800,99 @@
 
 .vocab-header-actions {
   display: flex;
+  align-items: center;
   gap: 10px;
+}
+
+.theme-mode-bubble {
+  position: relative;
+  max-width: 176px;
+  padding: 9px 12px;
+  display: grid;
+  gap: 2px;
+  box-sizing: border-box;
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+  background: #f8fafc;
+  color: #0f172a;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.theme-mode-bubble::after {
+  content: '';
+  position: absolute;
+  right: 22px;
+  bottom: -7px;
+  width: 12px;
+  height: 12px;
+  border-right: 1px solid #cbd5e1;
+  border-bottom: 1px solid #cbd5e1;
+  background: #f8fafc;
+  transform: rotate(45deg);
+}
+
+.theme-mode-bubble-arrow {
+  position: absolute;
+  right: 6px;
+  top: -18px;
+  color: #0f172a;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.theme-mode-bubble strong {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.theme-mode-bubble small {
+  color: #64748b;
+  font-size: 11px;
+}
+
+.bamti-page .theme-mode-bubble {
+  max-width: 190px;
+  border: 5px groove #15110c;
+  border-radius: 0;
+  background:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.22) 0 8px, transparent 8px 14px),
+    #c4bc87;
+  color: #15110c;
+  font-family: 'Comic Sans MS', 'Segoe UI', system-ui, sans-serif;
+  box-shadow: 10px 3px 0 #15110c, -4px -3px 0 #7b0000;
+  transform: rotate(-7deg) skewX(5deg);
+}
+
+.bamti-page .theme-mode-bubble::after {
+  right: 18px;
+  bottom: -12px;
+  width: 18px;
+  height: 18px;
+  border-right: 5px groove #15110c;
+  border-bottom: 5px groove #15110c;
+  background: #c4bc87;
+}
+
+.bamti-page .theme-mode-bubble-arrow {
+  color: #7b0000;
+  font-size: 26px;
+  text-shadow: 3px 2px 0 #d9d200;
+  transform: rotate(14deg);
+  animation: bamti-shiver 0.28s steps(2, end) infinite;
+}
+
+.bamti-page .theme-mode-bubble strong {
+  color: #7b0000;
+  font-weight: 950;
+  text-shadow: 2px 1px 0 #d9d200;
+}
+
+.bamti-page .theme-mode-bubble small {
+  color: #15110c;
+  font-size: 12px;
+  font-weight: 850;
 }
 
 .password-modal-backdrop {
@@ -1538,8 +1630,10 @@
   min-height: 100vh;
   padding: 48px 24px;
   box-sizing: border-box;
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   background: #ffffff;
   color: #0f172a;
   color-scheme: light;

@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from . import models, schemas
 from .database import Base, SessionLocal, engine
+from .seed_data import seed_shared_vocab_sets
 
 
 Base.metadata.create_all(bind=engine)
@@ -61,6 +62,20 @@ app.add_middleware(
 
 #암호화된 비밀번호 객체 생성, bcrypt라는 알고리즘 사용, 예전 방식으로 암호화된 비밀번호 폐기
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def seed_initial_shared_vocabs():
+    db = SessionLocal()
+    try:
+        seed_shared_vocab_sets(
+            db,
+            pwd_context.hash("shared-vocab-seed-user"),
+        )
+    finally:
+        db.close()
+
+
+seed_initial_shared_vocabs()
 
 #DB 연결 함수
 def get_db():

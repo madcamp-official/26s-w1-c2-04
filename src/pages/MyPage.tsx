@@ -30,6 +30,11 @@ function MyPage({
   }
 
   function validatePasswords() {
+    if (!newPassword.trim() || !newPasswordConfirm.trim()) {
+      setError('새 비밀번호를 모두 입력해 주세요.')
+      return
+    }
+
     if (newPassword !== newPasswordConfirm) {
       setError('비밀번호가 서로 일치하지 않습니다.')
       return
@@ -52,7 +57,7 @@ function MyPage({
     try {
       const response = await changePassword(
         userId,
-        newPassword,
+        newPassword.trim(),
       )
       setMessage(response.message)
       setError('')

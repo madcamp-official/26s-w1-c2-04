@@ -348,16 +348,13 @@ function VocabListPage({
           </div>
         </div>
         <div className="vocab-header-actions">
-          <button
-            className="logout-button"
-            type="button"
-            onClick={() => {
-              clearErrors()
-              onOpenSharedPage()
-            }}
-          >
-            공유 단어장
-          </button>
+          <div className="theme-mode-bubble" aria-label="화면 모드 변경 안내">
+            <span className="theme-mode-bubble-arrow">↘</span>
+            <strong>
+              {isBamtiMode ? '기본 모드로 변경?' : '밤티 모드로 변경?'}
+            </strong>
+            <small>마이페이지에서 바꿀 수 있어요</small>
+          </div>
           <button
             className="logout-button"
             type="button"
@@ -367,6 +364,16 @@ function VocabListPage({
             }}
           >
             마이페이지
+          </button>
+          <button
+            className="logout-button"
+            type="button"
+            onClick={() => {
+              clearErrors()
+              onOpenSharedPage()
+            }}
+          >
+            공유 단어장
           </button>
           <button
             className="logout-button"
