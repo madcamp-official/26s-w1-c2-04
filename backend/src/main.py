@@ -28,6 +28,18 @@ with engine.begin() as connection:
         connection.execute(
             text("ALTER TABLE vocabularies ADD COLUMN description VARCHAR NOT NULL DEFAULT ''")
         )
+    if "tags" not in vocab_column_names:
+        connection.execute(
+            text("ALTER TABLE vocabularies ADD COLUMN tags VARCHAR NOT NULL DEFAULT ''")
+        )
+    if "is_public" not in vocab_column_names:
+        connection.execute(
+            text("ALTER TABLE vocabularies ADD COLUMN is_public BOOLEAN NOT NULL DEFAULT 0")
+        )
+    if "share_count" not in vocab_column_names:
+        connection.execute(
+            text("ALTER TABLE vocabularies ADD COLUMN share_count INTEGER NOT NULL DEFAULT 0")
+        )
 #engine을 이용해서 생성된 모든 테이블을 DB에 저장
 
 app = FastAPI()
@@ -154,6 +166,14 @@ def read_vocabs(owner_id: int, db: Session = Depends(get_db)):
     )
 
 
+@app.get("/shared-vocabs/", response_model=list[schemas.Vocabulary])
+def read_shared_vocabs(owner_id: int | None = None, db: Session = Depends(get_db)):
+    query = db.query(models.Vocabulary).filter(models.Vocabulary.is_public == True)
+    if owner_id is not None:
+        query = query.filter(models.Vocabulary.owner_id != owner_id)
+    return query.all()
+
+
 @app.post(
     "/vocabs/",
     response_model=schemas.Vocabulary,
@@ -229,9 +249,108 @@ def update_vocab_description(
         )
 
     vocabulary.description = description_update.description.strip()
+    vocabulary.tags = description_update.tags.strip()
     db.commit()
     db.refresh(vocabulary)
     return vocabulary
+
+
+@app.put("/vocabs/{vocabulary_id}/public/", response_model=schemas.Vocabulary)
+def update_vocab_public(
+    vocabulary_id: int,
+    public_update: schemas.VocabPublicUpdate,
+    db: Session = Depends(get_db),
+):
+    vocabulary = (
+        db.query(models.Vocabulary)
+        .filter(models.Vocabulary.id == vocabulary_id)
+        .first()
+    )
+    if not vocabulary:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="수정할 단어장을 찾을 수 없습니다.",
+        )
+
+    vocabulary.is_public = public_update.is_public
+    db.commit()
+    db.refresh(vocabulary)
+    return vocabulary
+
+
+@app.post(
+    "/vocabs/{vocabulary_id}/copy/",
+    response_model=schemas.Vocabulary,
+    status_code=status.HTTP_201_CREATED,
+)
+def copy_shared_vocab(
+    vocabulary_id: int,
+    copy_request: schemas.VocabCopyRequest,
+    db: Session = Depends(get_db),
+):
+    owner = (
+        db.query(models.User)
+        .filter(models.User.id == copy_request.owner_id)
+        .first()
+    )
+    if not owner:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="사용자를 찾을 수 없습니다.",
+        )
+
+    source_vocab = (
+        db.query(models.Vocabulary)
+        .filter(
+            models.Vocabulary.id == vocabulary_id,
+            models.Vocabulary.is_public == True,
+        )
+        .first()
+    )
+    if not source_vocab:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="공유된 단어장을 찾을 수 없습니다.",
+        )
+
+    base_title = source_vocab.title.strip()
+    new_title = base_title
+    suffix = 1
+    while (
+        db.query(models.Vocabulary)
+        .filter(
+            models.Vocabulary.owner_id == copy_request.owner_id,
+            models.Vocabulary.title == new_title,
+        )
+        .first()
+    ):
+        new_title = f"{base_title} ({suffix})"
+        suffix += 1
+
+    copied_vocab = models.Vocabulary(
+        title=new_title,
+        owner_id=copy_request.owner_id,
+        description=source_vocab.description,
+        tags=source_vocab.tags,
+        is_public=False,
+    )
+    db.add(copied_vocab)
+    db.flush()
+
+    for source_word in source_vocab.words:
+        db.add(
+            models.Word(
+                vocab_id=copied_vocab.id,
+                word=source_word.word,
+                meaning=source_word.meaning,
+                examples=source_word.examples or "",
+            )
+        )
+
+    source_vocab.share_count += 1
+    db.commit()
+    db.refresh(copied_vocab)
+    return copied_vocab
 
 
 @app.delete("/vocabs/{vocabulary_id}")

@@ -28,6 +28,15 @@ class VocabCreate(BaseModel):
 
 class VocabDescriptionUpdate(BaseModel):
     description: str = ""
+    tags: str = ""
+
+
+class VocabPublicUpdate(BaseModel):
+    is_public: bool
+
+
+class VocabCopyRequest(BaseModel):
+    owner_id: int
 
 
 class Vocabulary(BaseModel):
@@ -37,6 +46,9 @@ class Vocabulary(BaseModel):
     title: str
     owner_id: int
     description: str = ""
+    tags: str = ""
+    is_public: bool = False
+    share_count: int = 0
     words: list[Word] = Field(default_factory=list)
 
 

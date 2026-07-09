@@ -1,14 +1,14 @@
 import { useState } from 'react'
 import type { Vocab } from '../types/vocabulary'
 import type { SortMode } from '../utils/sort'
-import { sortWords } from '../utils/sort'
+import { getShareCount, sortWords } from '../utils/sort'
 import QuizPage from './QuizPage'
 
 type VocabDetailPageProps = {
   vocab: Vocab
   requestError: string
   onBack: () => void
-  onUpdateDescription: (description: string) => Promise<void>
+  onUpdateTags: (tags: string) => Promise<void>
   onAddWord: (word: string, meaning: string, examples: string) => Promise<void>
   onUpdateWord: (
     wordId: number,
@@ -24,7 +24,7 @@ function VocabDetailPage({
   vocab,
   requestError,
   onBack,
-  onUpdateDescription,
+  onUpdateTags,
   onAddWord,
   onUpdateWord,
   onDeleteWords,
@@ -40,8 +40,8 @@ function VocabDetailPage({
   const [selectedWordIds, setSelectedWordIds] = useState<number[]>([])
   const [isQuizOpen, setIsQuizOpen] = useState(false)
   const [sortMode, setSortMode] = useState<SortMode>('latest')
-  const [descriptionDraft, setDescriptionDraft] = useState(vocab.description)
-  const [isEditingDescription, setIsEditingDescription] = useState(false)
+  const [tagsDraft, setTagsDraft] = useState(vocab.tags ?? '')
+  const [isEditingTags, setIsEditingTags] = useState(false)
 
   function clearErrors() {
     setError('')
@@ -57,21 +57,21 @@ function VocabDetailPage({
     setEditingWordId(null)
   }
 
-  async function handleSaveDescription() {
+  async function handleSaveTags() {
     clearErrors()
 
     try {
-      await onUpdateDescription(descriptionDraft)
-      setIsEditingDescription(false)
+      await onUpdateTags(tagsDraft)
+      setIsEditingTags(false)
     } catch {
       // 부모 컴포넌트에서 요청 에러를 표시합니다.
     }
   }
 
-  function handleCancelDescriptionEdit() {
+  function handleCancelTagsEdit() {
     clearErrors()
-    setDescriptionDraft(vocab.description)
-    setIsEditingDescription(false)
+    setTagsDraft(vocab.tags ?? '')
+    setIsEditingTags(false)
   }
 
   async function handleSaveWord(event: React.FormEvent<HTMLFormElement>) {
@@ -141,6 +141,12 @@ function VocabDetailPage({
       return
     }
 
+    const shouldDelete = window.confirm(
+      `선택한 단어 ${selectedWordIds.length}개를 삭제할까요?`,
+    )
+
+    if (!shouldDelete) return
+
     try {
       await onDeleteWords(selectedWordIds)
       setSelectedWordIds([])
@@ -208,13 +214,15 @@ function VocabDetailPage({
             type="button"
             onClick={() => {
               clearErrors()
-              setDescriptionDraft(vocab.description)
-              setIsEditingDescription(true)
+              setTagsDraft(vocab.tags ?? '')
+              setIsEditingTags(true)
             }}
           >
-            단어장 소개하기
+            태그
           </button>
-          <span className="word-count">{vocab.words.length}개 단어</span>
+          <span className="word-count">
+            {vocab.words.length}개 단어 · 공유 {getShareCount(vocab)}회
+          </span>
         </div>
       </header>
 
@@ -231,31 +239,33 @@ function VocabDetailPage({
           />
         </label>
       </section>
-      {isEditingDescription && (
+      {isEditingTags && (
         <div className="vocab-description-modal-backdrop">
           <section className="vocab-description-modal" aria-modal="true">
             <div className="vocab-description-header">
-              <h2>단어장 소개</h2>
+              <h2>태그</h2>
             </div>
             <div className="vocab-description-editor">
-              <textarea
-                value={descriptionDraft}
-                onChange={(event) => {
-                  setDescriptionDraft(event.target.value)
-                  clearErrors()
-                }}
-                placeholder="이 단어장을 어떻게 쓰는지 적어보세요"
-                rows={5}
-                autoFocus
-              />
+              <label className="vocab-tags-field">
+                태그
+                <input
+                  value={tagsDraft}
+                  onChange={(event) => {
+                    setTagsDraft(event.target.value)
+                    clearErrors()
+                  }}
+                  placeholder="예: 토익, 중급, 여행"
+                  autoFocus
+                />
+              </label>
               <div className="vocab-description-actions">
-                <button type="button" onClick={handleSaveDescription}>
+                <button type="button" onClick={handleSaveTags}>
                   저장
                 </button>
                 <button
                   className="secondary-button"
                   type="button"
-                  onClick={handleCancelDescriptionEdit}
+                  onClick={handleCancelTagsEdit}
                 >
                   취소
                 </button>
@@ -274,7 +284,7 @@ function VocabDetailPage({
             onClick={handleShowEditForm}
             disabled={vocab.words.length === 0}
           >
-            선택 수정
+            단어 수정
           </button>
           <button
             className="selected-delete-button"
@@ -282,7 +292,7 @@ function VocabDetailPage({
             onClick={handleDeleteSelected}
             disabled={vocab.words.length === 0}
           >
-            선택 삭제
+            단어 삭제
           </button>
           <span>{selectedWordIds.length}개 선택</span>
         </div>
@@ -342,12 +352,18 @@ function VocabDetailPage({
               placeholder="예: Apples are delicious"
             />
           </label>
-          <button type="submit">
-            {formMode === 'edit' ? '수정 저장' : '추가 완료'}
-          </button>
-          <button className="cancel-form-button" type="button" onClick={resetForm}>
-            취소
-          </button>
+          <div className="word-form-actions">
+            <button type="submit">
+              {formMode === 'edit' ? '수정 저장' : '추가 완료'}
+            </button>
+            <button
+              className="cancel-form-button"
+              type="button"
+              onClick={resetForm}
+            >
+              취소
+            </button>
+          </div>
           {error && <p className="word-form-error">{error}</p>}
         </form>
       )}
@@ -379,11 +395,11 @@ function VocabDetailPage({
                 <strong>{entry.word}</strong>
 
                 <p>{entry.meaning}</p>
-              
-              {entry.examples && (
-                <span>Ex. {entry.examples}</span>
-              
-              )}
+
+                {entry.examples && (
+                  <span>Ex. {entry.examples}</span>
+
+                )}
               </div>
             </li>
           ))}

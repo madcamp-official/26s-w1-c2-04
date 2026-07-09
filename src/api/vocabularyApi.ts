@@ -6,6 +6,10 @@ export function getVocabs(ownerId: number) {
   return apiRequest<Vocab[]>(`/vocabs/?owner_id=${ownerId}`)
 }
 
+export function getSharedVocabs(ownerId: number) {
+  return apiRequest<Vocab[]>(`/shared-vocabs/?owner_id=${ownerId}`)
+}
+
 export function createVocab(title: string, ownerId: number) {
   return apiRequest<Vocab>('/vocabs/', {
     method: 'POST',
@@ -22,10 +26,28 @@ export function deleteVocab(vocabId: number) {
   })
 }
 
-export function updateVocabDescription(vocabId: number, description: string) {
+export function updateVocabDescription(
+  vocabId: number,
+  description: string,
+  tags: string,
+) {
   return apiRequest<Vocab>(`/vocabs/${vocabId}/description/`, {
     method: 'PUT',
-    body: JSON.stringify({ description }),
+    body: JSON.stringify({ description, tags }),
+  })
+}
+
+export function updateVocabPublic(vocabId: number, isPublic: boolean) {
+  return apiRequest<Vocab>(`/vocabs/${vocabId}/public/`, {
+    method: 'PUT',
+    body: JSON.stringify({ is_public: isPublic }),
+  })
+}
+
+export function copySharedVocab(vocabId: number, ownerId: number) {
+  return apiRequest<Vocab>(`/vocabs/${vocabId}/copy/`, {
+    method: 'POST',
+    body: JSON.stringify({ owner_id: ownerId }),
   })
 }
 
